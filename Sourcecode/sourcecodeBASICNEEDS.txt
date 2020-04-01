@@ -1,0 +1,1351 @@
+#include "script.h"
+#include <string>
+#include <ctime>
+#include "iostream"
+#include "IniWriter.h"
+#include "IniReader.h"
+
+#pragma warning(disable : 4244 4305) // double <-> float conversions
+
+Ped playerPed;
+Player player;
+Vehicle veh;
+CIniReader reader(".\\BasicNeeds.ini");
+CIniWriter writer(".\\BasicNeeds.ini");
+
+int sleepLevelM,
+sleepTypeM,
+sleepLevelF,
+sleepTypeF,
+sleepLevelT,
+sleepTypeT,
+hungerLevelM,
+hungerTypeM,
+hungerLevelF,
+hungerTypeF,
+hungerLevelT,
+hungerTypeT,
+funLevelM,
+funTypeM,
+funLevelF,
+funTypeF,
+funLevelT,
+funTypeT;
+
+int min, baseMin, hour, baseHour, health, baseHealth, model, baseModel, baseMoneyM, baseMoneyF, baseMoneyT, moneyF, moneyM, moneyT;
+bool gotMin = false, gotHour = false, gotHealth = false, ateFood = false, saving = false, gotModel = false, gotMoneyM = false, gotMoneyF = false, gotMoneyT = false, reseting = false, hideText, sleepEnabled,
+hungerEnabled, funEnabled, noRegen, medPack = false;
+float sleepTextUpDown, sleepTextLeftRight, hungerTextUpDown, hungerTextLeftRight, funTextUpDown, funTextLeftRight;
+
+std::string statusText;
+DWORD statusTextDrawTicksMax;
+bool statusTextGxtEntry;
+
+std::string statusText2;
+DWORD statusTextDrawTicksMax2;
+bool statusTextGxtEntry2;
+
+std::string statusText3;
+DWORD statusTextDrawTicksMax3;
+bool statusTextGxtEntry3;
+
+void update_status_text()
+{
+	UI::SET_TEXT_FONT(0);
+	UI::SET_TEXT_SCALE(0.0, 0.30);
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+	{
+		if (hungerTypeM == 0)
+		{
+			if (hideText)
+				UI::SET_TEXT_COLOUR(255, 255, 255, 0);
+			else
+				UI::SET_TEXT_COLOUR(255, 255, 255, 255);
+		}
+		if (hungerTypeM == 1)
+		{
+			UI::SET_TEXT_COLOUR(0, 255, 0, 255);
+		}
+		if (hungerTypeM == 2)
+		{
+			UI::SET_TEXT_COLOUR(255, 255, 0, 255);
+		}
+		if (hungerTypeM == 3)
+		{
+			UI::SET_TEXT_COLOUR(255, 153, 51, 255);
+		}
+		if (hungerTypeM == 4)
+		{
+			UI::SET_TEXT_COLOUR(255, 0, 0, 255);
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+	{
+		if (hungerTypeF == 0)
+		{
+			if (hideText)
+				UI::SET_TEXT_COLOUR(255, 255, 255, 0);
+			else
+				UI::SET_TEXT_COLOUR(255, 255, 255, 255);
+		}
+		if (hungerTypeF == 1)
+		{
+			UI::SET_TEXT_COLOUR(0, 255, 0, 255);
+		}
+		if (hungerTypeF == 2)
+		{
+			UI::SET_TEXT_COLOUR(255, 255, 0, 255);
+		}
+		if (hungerTypeF == 3)
+		{
+			UI::SET_TEXT_COLOUR(255, 153, 51, 255);
+		}
+		if (hungerTypeF == 4)
+		{
+			UI::SET_TEXT_COLOUR(255, 0, 0, 255);
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+	{
+		if (hungerTypeT == 0)
+		{
+			if (hideText)
+				UI::SET_TEXT_COLOUR(255, 255, 255, 0);
+			else
+				UI::SET_TEXT_COLOUR(255, 255, 255, 255);
+		}
+		if (hungerTypeT == 1)
+		{
+			UI::SET_TEXT_COLOUR(0, 255, 0, 255);
+		}
+		if (hungerTypeT == 2)
+		{
+			UI::SET_TEXT_COLOUR(255, 255, 0, 255);
+		}
+		if (hungerTypeT == 3)
+		{
+			UI::SET_TEXT_COLOUR(255, 153, 51, 255);
+		}
+		if (hungerTypeT == 4)
+		{
+			UI::SET_TEXT_COLOUR(255, 0, 0, 255);
+		}
+	}
+	UI::SET_TEXT_WRAP(0.0, 1.0);
+	UI::SET_TEXT_CENTRE(1);
+	UI::SET_TEXT_DROPSHADOW(0, 0, 0, 0, 0);
+	UI::SET_TEXT_EDGE(1, 0, 0, 0, 205);
+	if (statusTextGxtEntry)
+	{
+		UI::_SET_TEXT_ENTRY((char *)statusText.c_str());
+	}
+	else
+	{
+		UI::_SET_TEXT_ENTRY("STRING");
+		UI::_ADD_TEXT_COMPONENT_STRING((char *)statusText.c_str());
+	}
+	UI::_DRAW_TEXT(hungerTextLeftRight, hungerTextUpDown);
+}
+
+void update_status_text2()
+{
+	UI::SET_TEXT_FONT(0);
+	UI::SET_TEXT_SCALE(0.0, 0.30);
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+	{
+		if (sleepTypeM == 0)
+		{
+			if (hideText)
+				UI::SET_TEXT_COLOUR(255, 255, 255, 0);
+			else
+				UI::SET_TEXT_COLOUR(255, 255, 255, 255);
+		}
+		if (sleepTypeM == 1)
+		{
+			UI::SET_TEXT_COLOUR(0, 255, 0, 255);
+		}
+		if (sleepTypeM == 2)
+		{
+			UI::SET_TEXT_COLOUR(255, 255, 0, 255);
+		}
+		if (sleepTypeM == 3)
+		{
+			UI::SET_TEXT_COLOUR(255, 153, 51, 255);
+		}
+		if (sleepTypeM == 4)
+		{
+			UI::SET_TEXT_COLOUR(255, 0, 0, 255);
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+	{
+		if (sleepTypeF == 0)
+		{
+			if (hideText)
+				UI::SET_TEXT_COLOUR(255, 255, 255, 0);
+			else
+				UI::SET_TEXT_COLOUR(255, 255, 255, 255);
+		}
+		if (sleepTypeF == 1)
+		{
+			UI::SET_TEXT_COLOUR(0, 255, 0, 255);
+		}
+		if (sleepTypeF == 2)
+		{
+			UI::SET_TEXT_COLOUR(255, 255, 0, 255);
+		}
+		if (sleepTypeF == 3)
+		{
+			UI::SET_TEXT_COLOUR(255, 153, 51, 255);
+		}
+		if (sleepTypeF == 4)
+		{
+			UI::SET_TEXT_COLOUR(255, 0, 0, 255);
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+	{
+		if (sleepTypeT == 0)
+		{
+			if (hideText)
+				UI::SET_TEXT_COLOUR(255, 255, 255, 0);
+			else
+				UI::SET_TEXT_COLOUR(255, 255, 255, 255);
+		}
+		if (sleepTypeT == 1)
+		{
+			UI::SET_TEXT_COLOUR(0, 255, 0, 255);
+		}
+		if (sleepTypeT == 2)
+		{
+			UI::SET_TEXT_COLOUR(255, 255, 0, 255);
+		}
+		if (sleepTypeT == 3)
+		{
+			UI::SET_TEXT_COLOUR(255, 153, 51, 255);
+		}
+		if (sleepTypeT == 4)
+		{
+			UI::SET_TEXT_COLOUR(255, 0, 0, 255);
+		}
+	}
+	UI::SET_TEXT_WRAP(0.0, 1.0);
+	UI::SET_TEXT_CENTRE(1);
+	UI::SET_TEXT_DROPSHADOW(0, 0, 0, 0, 0);
+	UI::SET_TEXT_EDGE(1, 0, 0, 0, 205);
+	if (statusTextGxtEntry)
+	{
+		UI::_SET_TEXT_ENTRY((char *)statusText2.c_str());
+	}
+	else
+	{
+		UI::_SET_TEXT_ENTRY("STRING");
+		UI::_ADD_TEXT_COMPONENT_STRING((char *)statusText2.c_str());
+	}
+	UI::_DRAW_TEXT(sleepTextLeftRight, sleepTextUpDown);
+}
+
+void update_status_text3()
+{
+	UI::SET_TEXT_FONT(0);
+	UI::SET_TEXT_SCALE(0.0, 0.30);
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+	{
+		if (funTypeM == 0)
+		{
+			if (hideText)
+				UI::SET_TEXT_COLOUR(255, 255, 255, 0);
+			else
+				UI::SET_TEXT_COLOUR(255, 255, 255, 255);
+		}
+		if (funTypeM == 1)
+		{
+			UI::SET_TEXT_COLOUR(0, 255, 0, 255);
+		}
+		if (funTypeM == 2)
+		{
+			UI::SET_TEXT_COLOUR(255, 255, 0, 255);
+		}
+		if (funTypeM == 3)
+		{
+			UI::SET_TEXT_COLOUR(255, 153, 51, 255);
+		}
+		if (funTypeM == 4)
+		{
+			UI::SET_TEXT_COLOUR(255, 0, 0, 255);
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+	{
+		if (funTypeF == 0)
+		{
+			if (hideText)
+				UI::SET_TEXT_COLOUR(255, 255, 255, 0);
+			else
+				UI::SET_TEXT_COLOUR(255, 255, 255, 255);
+		}
+		if (funTypeF == 1)
+		{
+			UI::SET_TEXT_COLOUR(0, 255, 0, 255);
+		}
+		if (funTypeF == 2)
+		{
+			UI::SET_TEXT_COLOUR(255, 255, 0, 255);
+		}
+		if (funTypeF == 3)
+		{
+			UI::SET_TEXT_COLOUR(255, 153, 51, 255);
+		}
+		if (funTypeF == 4)
+		{
+			UI::SET_TEXT_COLOUR(255, 0, 0, 255);
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+	{
+		if (funTypeT == 0)
+		{
+			if (hideText)
+				UI::SET_TEXT_COLOUR(255, 255, 255, 0);
+			else
+				UI::SET_TEXT_COLOUR(255, 255, 255, 255);
+		}
+		if (funTypeT == 1)
+		{
+			UI::SET_TEXT_COLOUR(0, 255, 0, 255);
+		}
+		if (funTypeT == 2)
+		{
+			UI::SET_TEXT_COLOUR(255, 255, 0, 255);
+		}
+		if (funTypeT == 3)
+		{
+			UI::SET_TEXT_COLOUR(255, 153, 51, 255);
+		}
+		if (funTypeT == 4)
+		{
+			UI::SET_TEXT_COLOUR(255, 0, 0, 255);
+		}
+	}
+	UI::SET_TEXT_WRAP(0.0, 1.0);
+	UI::SET_TEXT_CENTRE(1);
+	UI::SET_TEXT_DROPSHADOW(0, 0, 0, 0, 0);
+	UI::SET_TEXT_EDGE(1, 0, 0, 0, 205);
+	if (statusTextGxtEntry)
+	{
+		UI::_SET_TEXT_ENTRY((char *)statusText3.c_str());
+	}
+	else
+	{
+		UI::_SET_TEXT_ENTRY("STRING");
+		UI::_ADD_TEXT_COMPONENT_STRING((char *)statusText3.c_str());
+	}
+	UI::_DRAW_TEXT(funTextLeftRight, funTextUpDown);
+}
+
+void set_status_text(std::string str, DWORD time = 2500, bool isGxtEntry = false)
+{
+	statusText = str;
+	statusTextDrawTicksMax = time;
+	statusTextGxtEntry = isGxtEntry;
+}
+
+void set_status_text2(std::string str, DWORD time = 2500, bool isGxtEntry = false)
+{
+	statusText2 = str;
+	statusTextDrawTicksMax2 = time;
+	statusTextGxtEntry2 = isGxtEntry;
+}
+
+void set_status_text3(std::string str, DWORD time = 2500, bool isGxtEntry = false)
+{
+	statusText3 = str;
+	statusTextDrawTicksMax3 = time;
+	statusTextGxtEntry3 = isGxtEntry;
+}
+
+void update_text()
+{
+	if (!PLAYER::IS_PLAYER_DEAD(player))
+	{
+		if (!CUTSCENE::IS_CUTSCENE_PLAYING())
+		{
+			if (hungerEnabled)
+				update_status_text();
+			if (sleepEnabled)
+				update_status_text2();
+			if (funEnabled)
+				update_status_text3();
+		}
+	}
+}
+
+void update()
+{
+	playerPed = PLAYER::PLAYER_PED_ID();
+	player = PLAYER::PLAYER_ID();
+	veh = PED::GET_VEHICLE_PED_IS_USING(playerPed);
+
+	Vector3 position = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+	if (OBJECT::_0xF9C36251F6E48E33(GAMEPLAY::GET_HASH_KEY("PICKUP_HEALTH_STANDARD"), position.x, position.y, position.z, 2.0f))
+	{
+		medPack = true;
+	}
+	else
+	{
+		medPack = false;
+	}
+
+	if (noRegen)
+		PLAYER::_0x5DB660B38DD98A31(player, 0.0f);
+
+	if (gotModel == false)
+	{
+		if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+			baseModel = 0;
+		if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+			baseModel = 1;
+		if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+			baseModel = 2;
+		gotModel = true;
+	}
+
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+		model = 0;
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+		model = 1;
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+		model = 2;
+
+	if (model != baseModel)
+	{
+		gotModel = false;
+	}
+
+	if (hungerEnabled)
+	{
+		if (ENTITY::GET_ENTITY_HEALTH(playerPed) == ENTITY::GET_ENTITY_MAX_HEALTH(playerPed) && ateFood == false)
+		{
+			if (!VEHICLE::IS_VEHICLE_MODEL(veh, GAMEPLAY::GET_HASH_KEY("ambulance")) && medPack == false)
+			{
+				if (model == baseModel)
+				{
+					if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+					{
+						hungerLevelM = 720;
+						hungerTypeM = 0;
+						ateFood = true;
+					}
+					if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+					{
+						hungerLevelF = 720;
+						hungerTypeF = 0;
+						ateFood = true;
+					}
+					if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+					{
+						hungerLevelT = 720;
+						hungerTypeT = 0;
+						ateFood = true;
+					}
+				}
+			}
+			ENTITY::SET_ENTITY_HEALTH(playerPed, (ENTITY::GET_ENTITY_HEALTH(playerPed) - 1.0f));
+		}
+
+		if (ENTITY::GET_ENTITY_HEALTH(playerPed) == (ENTITY::GET_ENTITY_MAX_HEALTH(playerPed) - 1.0f) && ateFood == true)
+		{
+			ateFood = false;
+		}
+
+		if (gotHealth == false)
+		{
+			baseHealth = ENTITY::GET_ENTITY_HEALTH(playerPed);
+			gotHealth = true;
+		}
+
+		health = ENTITY::GET_ENTITY_HEALTH(playerPed);
+
+		if (gotHealth == true)
+		{
+			if (health != baseHealth)
+			{
+				if (!VEHICLE::IS_VEHICLE_MODEL(veh, GAMEPLAY::GET_HASH_KEY("ambulance")) && medPack == false)
+				{
+					if (health >= (baseHealth + 10))
+					{
+						if (model == baseModel)
+						{
+							if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+							{
+								hungerLevelM = 720;
+								hungerTypeM = 0;
+							}
+							if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+							{
+								hungerLevelF = 720;
+								hungerTypeF = 0;
+							}
+							if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+							{
+								hungerLevelT = 720;
+								hungerTypeT = 0;
+							}
+						}
+					}
+				}
+				gotHealth = false;
+			}
+		}
+	}
+
+	if (PLAYER::IS_PLAYER_DEAD(player))
+	{
+		if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+		{
+			sleepLevelM = 1200;
+			sleepTypeM = 0;
+			hungerLevelM = 720;
+			hungerTypeM = 0;
+			funLevelM = 540;
+			funTypeM = 0;
+		}
+		if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+		{
+			sleepLevelF = 1200;
+			sleepTypeF = 0;
+			hungerLevelF = 720;
+			hungerTypeF = 0;
+			funLevelF = 540;
+			funTypeF = 0;
+		}
+		if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+		{
+			sleepLevelT = 1200;
+			sleepTypeT = 0;
+			hungerLevelT = 720;
+			hungerTypeT = 0;
+			funLevelT = 540;
+			funTypeT = 0;
+		}
+	}
+	if (GetAsyncKeyState(VK_LCONTROL) && GetAsyncKeyState('E') && saving == false)
+	{
+		saving = true;
+		WAIT(500);
+		if (hungerEnabled)
+		{
+			writer.WriteInteger("Sleep Levels", "Michael", sleepLevelM);
+			writer.WriteInteger("Sleep Levels", "Franklin", sleepLevelF);
+			writer.WriteInteger("Sleep Levels", "Trevor", sleepLevelT);
+		}
+		if (sleepEnabled)
+		{
+			writer.WriteInteger("Hunger Levels", "Michael", hungerLevelM);
+			writer.WriteInteger("Hunger Levels", "Franklin", hungerLevelF);
+			writer.WriteInteger("Hunger Levels", "Trevor", hungerLevelT);
+		}
+		if (funEnabled)
+		{
+			writer.WriteInteger("Fun Levels", "Michael", funLevelM);
+			writer.WriteInteger("Fun Levels", "Franklin", funLevelF);
+			writer.WriteInteger("Fun Levels", "Trevor", funLevelT);
+		}
+	}
+
+	if (!GetAsyncKeyState(VK_RCONTROL) && !GetAsyncKeyState('E'))
+	{
+		saving = false;
+	}
+
+	if (GetAsyncKeyState(VK_LCONTROL) && GetAsyncKeyState('R') && reseting == false)
+	{
+		reseting = true;
+		WAIT(500);
+		if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+		{
+			if (hungerEnabled)
+			{
+				hungerLevelM = 720;
+				hungerTypeM = 0;
+			}
+			if (sleepEnabled)
+			{
+				sleepLevelM = 1200;
+				sleepTypeM = 0;
+			}
+			if (funEnabled)
+			{
+				funLevelM = 540;
+				funTypeM = 0;
+			}
+		}
+		if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+		{
+			if (hungerEnabled)
+			{
+				sleepLevelF = 1200;
+				sleepTypeF = 0;
+			}
+			if (sleepEnabled)
+			{
+				hungerLevelF = 720;
+				hungerTypeF = 0;
+			}
+			if (funEnabled)
+			{
+				funLevelF = 540;
+				funTypeF = 0;
+			}
+		}
+		if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+		{
+			if (hungerEnabled)
+			{
+				hungerLevelT = 720;
+				hungerTypeT = 0;
+			}
+			if (sleepEnabled)
+			{
+				sleepLevelT = 1200;
+				sleepTypeT = 0;
+			}
+			if (funEnabled)
+			{
+				funLevelT = 540;
+				funTypeT = 0;
+			}
+		}
+	}
+
+	if (!GetAsyncKeyState(VK_RCONTROL) && !GetAsyncKeyState('R'))
+	{
+		reseting = false;
+	}
+}
+
+void sleepSystem()
+{
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+	{
+		if (sleepLevelM <= 650)
+		{
+			sleepTypeM = 1;
+		}
+		if (sleepLevelM <= 450)
+		{
+			sleepTypeM = 2;
+		}
+		if (sleepLevelM <= 250)
+		{
+			sleepTypeM = 3;
+		}
+		if (sleepLevelM <= 0)
+		{
+			sleepTypeM = 4;
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+	{
+		if (sleepLevelF <= 650)
+		{
+			sleepTypeF = 1;
+		}
+		if (sleepLevelF <= 450)
+		{
+			sleepTypeF = 2;
+		}
+		if (sleepLevelF <= 250)
+		{
+			sleepTypeF = 3;
+		}
+		if (sleepLevelF <= 0)
+		{
+			sleepTypeF = 4;
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+	{
+		if (sleepLevelT <= 650)
+		{
+			sleepTypeT = 1;
+		}
+		if (sleepLevelT <= 450)
+		{
+			sleepTypeT = 2;
+		}
+		if (sleepLevelT <= 250)
+		{
+			sleepTypeT = 3;
+		}
+		if (sleepLevelT <= 0)
+		{
+			sleepTypeT = 4;
+		}
+	}
+}
+
+void hungerSystem()
+{
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+	{
+		if (hungerLevelM <= 375)
+		{
+			hungerTypeM = 1;
+		}
+		if (hungerLevelM <= 250)
+		{
+			hungerTypeM = 2;
+		}
+		if (hungerLevelM <= 125)
+		{
+			hungerTypeM = 3;
+		}
+		if (hungerLevelM <= 0)
+		{
+			hungerTypeM = 4;
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+	{
+		if (hungerLevelF <= 375)
+		{
+			hungerTypeF = 1;
+		}
+		if (hungerLevelF <= 250)
+		{
+			hungerTypeF = 2;
+		}
+		if (hungerLevelF <= 125)
+		{
+			hungerTypeF = 3;
+		}
+		if (hungerLevelF <= 0)
+		{
+			hungerTypeF = 4;
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+	{
+		if (hungerLevelT <= 375)
+		{
+			hungerTypeT = 1;
+		}
+		if (hungerLevelT <= 250)
+		{
+			hungerTypeT = 2;
+		}
+		if (hungerLevelT <= 125)
+		{
+			hungerTypeT = 3;
+		}
+		if (hungerLevelT <= 0)
+		{
+			hungerTypeT = 4;
+		}
+	}
+}
+
+void timeSystem()
+{
+	if (gotMin == false)
+	{
+		baseMin = TIME::GET_CLOCK_MINUTES();
+		gotMin = true;
+	}
+	if (gotHour == false)
+	{
+		baseHour = TIME::GET_CLOCK_HOURS();
+		gotHour = true;
+	}
+
+	min = TIME::GET_CLOCK_MINUTES();
+	hour = TIME::GET_CLOCK_HOURS();
+
+	if (min != baseMin)
+	{
+		if (hungerEnabled)
+		{
+			if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+			{
+				hungerLevelM -= 1;
+			}
+			if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+			{
+				hungerLevelF -= 1;
+			}
+			if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+			{
+				hungerLevelT -= 1;
+			}
+
+			if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+			{
+				if (hungerTypeM == 4)
+				{
+					ENTITY::SET_ENTITY_HEALTH(playerPed, (ENTITY::GET_ENTITY_HEALTH(playerPed) - 10.0f));
+				}
+			}
+			if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+			{
+				if (hungerTypeF == 4)
+				{
+					ENTITY::SET_ENTITY_HEALTH(playerPed, (ENTITY::GET_ENTITY_HEALTH(playerPed) - 10.0f));
+				}
+			}
+			if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+			{
+				if (hungerTypeT == 4)
+				{
+					ENTITY::SET_ENTITY_HEALTH(playerPed, (ENTITY::GET_ENTITY_HEALTH(playerPed) - 10.0f));
+				}
+			}
+		}
+
+		if (sleepEnabled)
+		{
+			if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+			{
+				sleepLevelM -= 1;
+			}
+			if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+			{
+				sleepLevelF -= 1;
+			}
+			if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+			{
+				sleepLevelT -= 1;
+			}
+
+			if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+			{
+				if (sleepTypeM == 4)
+				{
+					ENTITY::SET_ENTITY_HEALTH(playerPed, 0.0f);
+				}
+			}
+			if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+			{
+				if (sleepTypeF == 4)
+				{
+					ENTITY::SET_ENTITY_HEALTH(playerPed, 0.0f);
+				}
+			}
+			if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+			{
+				if (sleepTypeT == 4)
+				{
+					ENTITY::SET_ENTITY_HEALTH(playerPed, 0.0f);
+				}
+			}
+		}
+
+		if (funEnabled)
+		{
+			if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+			{
+				funLevelM -= 1;
+			}
+			if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+			{
+				funLevelF -= 1;
+			}
+			if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+			{
+				funLevelT -= 1;
+			}
+		}
+		gotMin = false;
+	}
+	if (hour != baseHour)
+	{
+		gotHour = false;
+
+		if (hour < baseHour)
+		{
+			if (hour > (baseHour - 23))
+			{
+				if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+				{
+					if (hungerEnabled)
+						hungerLevelM -= 200;
+					if (funEnabled)
+						funLevelM -= 200;
+					if (sleepEnabled)
+					{
+						sleepLevelM = 1200;
+						sleepTypeM = 0;
+					}
+				}
+				if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+				{
+					if (hungerEnabled)
+						hungerLevelF -= 200;
+					if (funEnabled)
+						funLevelF -= 200;
+					if (sleepEnabled)
+					{
+						sleepLevelF = 1200;
+						sleepTypeF = 0;
+					}
+				}
+				if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+				{
+					if (hungerEnabled)
+						hungerLevelT -= 200;
+					if (funEnabled)
+						funLevelT -= 200;
+					if (sleepEnabled)
+					{
+						sleepLevelT = 1200;
+						sleepTypeT = 0;
+					}
+				}
+			}
+		}
+
+		if (hour > baseHour)
+		{
+			if (hour >= (baseHour + 6))
+			{
+				if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+				{
+					if (hungerEnabled)
+						hungerLevelM -= 200;
+					if (funEnabled)
+						funLevelM -= 200;
+					if (sleepEnabled)
+					{
+						sleepLevelM = 1200;
+						sleepTypeM = 0;
+					}
+				}
+				if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+				{
+					if (hungerEnabled)
+						hungerLevelF -= 200;
+					if (funEnabled)
+						funLevelF -= 200;
+					if (sleepEnabled)
+					{
+						sleepLevelF = 1200;
+						sleepTypeF = 0;
+					}
+				}
+				if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+				{
+					if (hungerEnabled)
+						hungerLevelT -= 200;
+					if (funEnabled)
+						funLevelT -= 200;
+					if (sleepEnabled)
+					{
+						sleepLevelT = 1200;
+						sleepTypeT = 0;
+					}
+				}
+			}
+		}
+	}
+}
+
+void funSystem()
+{
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+	{
+		if (funLevelM <= 300)
+		{
+			funTypeM = 1;
+		}
+		if (funLevelM <= 200)
+		{
+			funTypeM = 2;
+		}
+		if (funLevelM <= 100)
+		{
+			funTypeM = 3;
+		}
+		if (funLevelM <= 0)
+		{
+			funTypeM = 4;
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+	{
+		if (funLevelF <= 300)
+		{
+			funTypeF = 1;
+		}
+		if (funLevelF <= 200)
+		{
+			funTypeF = 2;
+		}
+		if (funLevelF <= 100)
+		{
+			funTypeF = 3;
+		}
+		if (funLevelF <= 0)
+		{
+			funTypeF = 4;
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+	{
+		if (funLevelT <= 300)
+		{
+			funTypeT = 1;
+		}
+		if (funLevelT <= 200)
+		{
+			funTypeT = 2;
+		}
+		if (funLevelT <= 100)
+		{
+			funTypeT = 3;
+		}
+		if (funLevelT <= 0)
+		{
+			funTypeT = 4;
+		}
+	}
+
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+	{
+		if (funTypeM == 4)
+		{
+			if (ENTITY::GET_ENTITY_HEALTH(playerPed) > (ENTITY::GET_ENTITY_MAX_HEALTH(playerPed) - 20.0f) && !CAM::IS_SCREEN_FADED_OUT() && !CAM::IS_SCREEN_FADING_IN() && !CAM::IS_SCREEN_FADING_OUT())
+			{
+				ENTITY::SET_ENTITY_HEALTH(playerPed, (ENTITY::GET_ENTITY_MAX_HEALTH(playerPed) - 20.0f));
+			}
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+	{
+		if (funTypeF == 4)
+		{
+			if (ENTITY::GET_ENTITY_HEALTH(playerPed) > (ENTITY::GET_ENTITY_MAX_HEALTH(playerPed) - 20.0f) && !CAM::IS_SCREEN_FADED_OUT() && !CAM::IS_SCREEN_FADING_IN() && !CAM::IS_SCREEN_FADING_OUT())
+			{
+				ENTITY::SET_ENTITY_HEALTH(playerPed, (ENTITY::GET_ENTITY_MAX_HEALTH(playerPed) - 20.0f));
+			}
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+	{
+		if (funTypeT == 4)
+		{
+			if (ENTITY::GET_ENTITY_HEALTH(playerPed) > (ENTITY::GET_ENTITY_MAX_HEALTH(playerPed) - 20.0f) && !CAM::IS_SCREEN_FADED_OUT() && !CAM::IS_SCREEN_FADING_IN() && !CAM::IS_SCREEN_FADING_OUT())
+			{
+				ENTITY::SET_ENTITY_HEALTH(playerPed, (ENTITY::GET_ENTITY_MAX_HEALTH(playerPed) - 20.0f));
+			}
+		}
+	}
+
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+	{
+		if (gotMoneyM == false)
+		{
+			char statNameFull[32];
+			sprintf_s(statNameFull, "SP%d_TOTAL_CASH", 0);
+			Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+			int val;
+			STATS::STAT_GET_INT(hash, &val, -1);
+			baseMoneyM = val;
+			gotMoneyM = true;
+		}
+
+		char statNameFull[32];
+		sprintf_s(statNameFull, "SP%d_TOTAL_CASH", 0);
+		Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+		int val;
+		STATS::STAT_GET_INT(hash, &val, -1);
+		moneyM = val;
+
+		if (moneyM != baseMoneyM)
+		{
+			if (moneyM < baseMoneyM)
+			{
+				funLevelM = 540;
+				funTypeM = 0;
+			}
+			gotMoneyM = false;
+		}
+
+		if (GAMEPLAY::IS_MINIGAME_IN_PROGRESS() || ENTITY::IS_ENTITY_PLAYING_ANIM(playerPed, "mp_player_intdrink", "loop_bottle", 3) || ENTITY::IS_ENTITY_PLAYING_ANIM(playerPed, "mp_player_int_uppersmoke", "mp_player_int_smoke", 3))
+		{
+			funLevelM = 540;
+			funTypeM = 0;
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+	{
+		if (gotMoneyF == false)
+		{
+			char statNameFull[32];
+			sprintf_s(statNameFull, "SP%d_TOTAL_CASH", 1);
+			Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+			int val;
+			STATS::STAT_GET_INT(hash, &val, -1);
+			baseMoneyF = val;
+			gotMoneyF = true;
+		}
+
+		char statNameFull[32];
+		sprintf_s(statNameFull, "SP%d_TOTAL_CASH", 1);
+		Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+		int val;
+		STATS::STAT_GET_INT(hash, &val, -1);
+		moneyF = val;
+
+		if (moneyF != baseMoneyF)
+		{
+			if (moneyF < baseMoneyF)
+			{
+				funLevelF = 540;
+				funTypeF = 0;
+			}
+			gotMoneyF = false;
+		}
+
+		if (GAMEPLAY::IS_MINIGAME_IN_PROGRESS() || ENTITY::IS_ENTITY_PLAYING_ANIM(playerPed, "mp_player_intdrink", "loop_bottle", 3) || ENTITY::IS_ENTITY_PLAYING_ANIM(playerPed, "mp_player_int_uppersmoke", "mp_player_int_smoke", 3))
+		{
+			funLevelF = 540;
+			funTypeF = 0;
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+	{
+		if (gotMoneyT == false)
+		{
+			char statNameFull[32];
+			sprintf_s(statNameFull, "SP%d_TOTAL_CASH", 2);
+			Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+			int val;
+			STATS::STAT_GET_INT(hash, &val, -1);
+			baseMoneyT = val;
+			gotMoneyT = true;
+		}
+
+		char statNameFull[32];
+		sprintf_s(statNameFull, "SP%d_TOTAL_CASH", 2);
+		Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+		int val;
+		STATS::STAT_GET_INT(hash, &val, -1);
+		moneyT = val;
+
+		if (moneyT != baseMoneyT)
+		{
+			if (moneyT < baseMoneyT)
+			{
+				funLevelT = 540;
+				funTypeT = 0;
+			}
+			gotMoneyT = false;
+		}
+
+		if (GAMEPLAY::IS_MINIGAME_IN_PROGRESS() || ENTITY::IS_ENTITY_PLAYING_ANIM(playerPed, "mp_player_intdrink", "loop_bottle", 3) || ENTITY::IS_ENTITY_PLAYING_ANIM(playerPed, "mp_player_int_uppersmoke", "mp_player_int_smoke", 3))
+		{
+			funLevelT = 540;
+			funTypeT = 0;
+		}
+	}
+
+	if (PLAYER::GET_PLAYER_WANTED_LEVEL(player) == 5)
+	{
+		if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+		{
+			funLevelM = 540;
+			funTypeM = 0;
+		}
+		if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+		{
+			funLevelF = 540;
+			funTypeF = 0;
+		}
+		if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+		{
+			funLevelT = 540;
+			funTypeT = 0;
+		}
+	}
+}
+
+void sideEffects()
+{
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+	{
+		if (sleepTypeM > 2)
+			PLAYER::SET_PLAYER_SPRINT(player, 0);
+		else
+			PLAYER::SET_PLAYER_SPRINT(player, 1);
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+	{
+		if (sleepTypeF > 2)
+			PLAYER::SET_PLAYER_SPRINT(player, 0);
+		else
+			PLAYER::SET_PLAYER_SPRINT(player, 1);
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+	{
+		if (sleepTypeT > 2)
+			PLAYER::SET_PLAYER_SPRINT(player, 0);
+		else
+			PLAYER::SET_PLAYER_SPRINT(player, 1);
+	}
+
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+	{
+		if (hungerTypeM > 2)
+		{
+			PLAYER::SPECIAL_ABILITY_DEACTIVATE(player);
+			PLAYER::ENABLE_SPECIAL_ABILITY(player, 0);
+		}
+		else
+			PLAYER::ENABLE_SPECIAL_ABILITY(player, 1);
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+	{
+		if (hungerTypeF > 2)
+		{
+			PLAYER::SPECIAL_ABILITY_DEACTIVATE(player);
+			PLAYER::ENABLE_SPECIAL_ABILITY(player, 0);
+		}
+		else
+			PLAYER::ENABLE_SPECIAL_ABILITY(player, 1);
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+	{
+		if (hungerTypeT > 2)
+		{
+			PLAYER::SPECIAL_ABILITY_DEACTIVATE(player);
+			PLAYER::ENABLE_SPECIAL_ABILITY(player, 0);
+		}
+		else
+			PLAYER::ENABLE_SPECIAL_ABILITY(player, 1);
+	}
+
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+	{
+		if (funTypeM == 3)
+		{
+			if (ENTITY::GET_ENTITY_HEALTH(playerPed) > (ENTITY::GET_ENTITY_MAX_HEALTH(playerPed) - 10.0f) && !CAM::IS_SCREEN_FADED_OUT() && !CAM::IS_SCREEN_FADING_IN() && !CAM::IS_SCREEN_FADING_OUT())
+			{
+				ENTITY::SET_ENTITY_HEALTH(playerPed, (ENTITY::GET_ENTITY_MAX_HEALTH(playerPed) - 10.0f));
+			}
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+	{
+		if (funTypeF == 3)
+		{
+			if (ENTITY::GET_ENTITY_HEALTH(playerPed) > (ENTITY::GET_ENTITY_MAX_HEALTH(playerPed) - 10.0f) && !CAM::IS_SCREEN_FADED_OUT() && !CAM::IS_SCREEN_FADING_IN() && !CAM::IS_SCREEN_FADING_OUT())
+			{
+				ENTITY::SET_ENTITY_HEALTH(playerPed, (ENTITY::GET_ENTITY_MAX_HEALTH(playerPed) - 10.0f));
+			}
+		}
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+	{
+		if (funTypeT == 3)
+		{
+			if (ENTITY::GET_ENTITY_HEALTH(playerPed) > (ENTITY::GET_ENTITY_MAX_HEALTH(playerPed) - 10.0f) && !CAM::IS_SCREEN_FADED_OUT() && !CAM::IS_SCREEN_FADING_IN() && !CAM::IS_SCREEN_FADING_OUT())
+			{
+				ENTITY::SET_ENTITY_HEALTH(playerPed, (ENTITY::GET_ENTITY_MAX_HEALTH(playerPed) - 10.0f));
+			}
+		}
+	}
+}
+
+void main()
+{
+	set_status_text("Hunger");
+	set_status_text2("Sleep");
+	set_status_text3("Fun");
+
+	int test = reader.ReadInteger("Sleep Levels", "Michael", NULL);
+
+	if (test == NULL)
+	{
+		writer.WriteInteger("Sleep Levels", "Michael", 1200);
+		writer.WriteInteger("Sleep Levels", "Franklin", 1200);
+		writer.WriteInteger("Sleep Levels", "Trevor", 1200);
+	}
+
+	sleepLevelM = reader.ReadInteger("Sleep Levels", "Michael", 1200);
+	sleepLevelF = reader.ReadInteger("Sleep Levels", "Franklin", 1200);
+	sleepLevelT = reader.ReadInteger("Sleep Levels", "Trevor", 1200);
+
+	int test2 = reader.ReadInteger("Hunger Levels", "Michael", NULL);
+
+	if (test2 == NULL)
+	{
+		writer.WriteInteger("Hunger Levels", "Michael", 720);
+		writer.WriteInteger("Hunger Levels", "Franklin", 720);
+		writer.WriteInteger("Hunger Levels", "Trevor", 720);
+	}
+
+	hungerLevelM = reader.ReadInteger("Hunger Levels", "Michael", 720);
+	hungerLevelF = reader.ReadInteger("Hunger Levels", "Franklin", 720);
+	hungerLevelT = reader.ReadInteger("Hunger Levels", "Trevor", 720);
+
+	int test3 = reader.ReadFloat("Fun Levels", "Michael", NULL);
+
+	if (test3 == NULL)
+	{
+		writer.WriteInteger("Fun Levels", "Michael", 540);
+		writer.WriteInteger("Fun Levels", "Franklin", 540);
+		writer.WriteInteger("Fun Levels", "Trevor", 540);
+	}
+
+	funLevelM = reader.ReadInteger("Fun Levels", "Michael", 540);
+	funLevelF = reader.ReadInteger("Fun Levels", "Franklin", 540);
+	funLevelT = reader.ReadInteger("Fun Levels", "Trevor", 540);
+
+	float test4 = reader.ReadFloat("TextPos", "SleepUpDown", NULL);
+
+	if (test4 == NULL)
+	{
+		writer.WriteFloat("TextPos", "SleepUpDown", 0.825);
+		writer.WriteFloat("TextPos", "SleepLeftRight", 0.17876);
+		writer.WriteFloat("TextPos", "HungerUpDown", 0.805);
+		writer.WriteFloat("TextPos", "HungerLeftRight", 0.182);
+		writer.WriteFloat("TextPos", "FunUpDown", 0.845);
+		writer.WriteFloat("TextPos", "FunLeftRight", 0.17435);
+		writer.WriteBoolean("Options", "HungerEnabled", true);
+		writer.WriteBoolean("Options", "SleepEnabled", true);
+		writer.WriteBoolean("Options", "FunEnabled", true);
+	}
+
+	sleepTextUpDown = reader.ReadFloat("TextPos", "SleepUpDown", 0.825);
+	sleepTextLeftRight = reader.ReadFloat("TextPos", "SleepLeftRight", 0.17876);
+	hungerTextUpDown = reader.ReadFloat("TextPos", "HungerUpDown", 0.805);
+	hungerTextLeftRight = reader.ReadFloat("TextPos", "HungerLeftRight", 0.182);
+	funTextUpDown = reader.ReadFloat("TextPos", "FunUpDown", 0.845);
+	funTextLeftRight = reader.ReadFloat("TextPos", "FunLeftRight", 0.17435);
+	hideText = reader.ReadBoolean("Options", "HideText", false);
+	hungerEnabled = reader.ReadBoolean("Options", "HungerEnabled", true);
+	sleepEnabled = reader.ReadBoolean("Options", "SleepEnabled", true);
+	funEnabled = reader.ReadBoolean("Options", "FunEnabled", true);
+	noRegen = reader.ReadBoolean("Options", "NoHealthRegen", false);
+
+	while (true)
+	{
+		update();
+		update_text();
+		if (sleepEnabled)
+			sleepSystem();
+		if (hungerEnabled)
+			hungerSystem();
+		if (funEnabled)
+			funSystem();
+		timeSystem();
+		sideEffects();
+		WAIT(0);
+	}
+}
+
+void ScriptMain()
+{
+	srand(GetTickCount());
+	main();
+}

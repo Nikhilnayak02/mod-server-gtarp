@@ -1,0 +1,59 @@
+The "BasicNeeds.ini" file includes various options to make the mod behave how you want it to.
+
+HideText
+-This option will enable or disable white text for Hunger, Sleep, and Fun.  Making the text only show when
+ statistic levels are low.  When set to true white text will disappear.  When set to false white text will show.
+ This is an option for the "BasicNeeds.asi" script.
+
+HungerEnabled
+-This option will enable or disable the Hunger statistic.  When set to true hunger is enabled.  When set to false
+ hunger is disabled.  This is an option for the "BasicNeeds.asi" script.  
+
+SleepEnabled
+-This option will enable or disable the Sleep statistic.  When set to true sleep is enabled.  When set to false
+ sleep is disabled.  This is an option for the "BasicNeeds.asi" script.
+
+FunEnabled
+-This option will enable or disable the Fun statistic.  When set to true fun is enabled.  When set to false
+ fun is disabled.  This is an option for the "BasicNeeds.asi" script.
+
+NoHealthRegen
+-This option will enable or disable the games automatic health regeneration.  When set to true the game will
+ behave normally and regenerate your health up to 50.  When set to false the game will not regenerate any of
+ your health.  This is an option for the "BasicNeeds.asi" script.
+
+MenuButton
+-This option allows you to set the key used to open the inventory menu.  A list of key numbers can be found
+ on this website (http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes).  Find which
+ number you need and enter it.  This is an option for the "Inventory.asi" script.
+
+ScreenType
+-This option allows support for different screen types.  Look at the following list for supported screen
+ resolutions.  (Note: Resolutions were tested in borderless window mode with an aspect ration of auto)
+	ScreenType=1
+		-1280x720
+		-1600x900
+		-1920x1080
+	ScreenType=2
+		-800x600
+		-1024x768
+		-1280x960
+		-1280x1024
+	
+ If you do not find your screen resolution it is recommended that you start with a screen type of 2 if your
+ screen resolution is lower than 1920x1080, and a screen type of 1 if your resolution is higher than 1920x1080.
+ This is an option for the "Inventory.asi" script.
+
+TextPos
+-Values in this section set where the position of the "Hunger", "Sleep", and "Fun" text is located on screen.
+ You can have a max value of 1.0 and a minimum value of 0.0.  The larger the number the more right, or down
+ the text will appear on screen.  If you are using screen type 2 these are recommended values for text position:
+	SleepUpDown=0.825000
+	SleepLeftRight=0.228760 
+	FunLeftRight=0.224350
+	FunUpDown=0.845000
+	HungerUpDown=0.805000			
+	HungerLeftRight=0.232000
+
+
+Any other things in the .ini are used for saving and should be edited at your own risk.

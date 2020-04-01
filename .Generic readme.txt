@@ -1,0 +1,36 @@
+Basic Needs v1.0
+
+Whats new v1.0:
+-Fixed health packs filling hunger
+-Added smoke to cigarettes
+-Having a five star wanted level now restores fun
+-Animations are now loopable by holding the key
+-You can toggle blips with left control + B
+-Added support for smaller screen resolutions through the .ini
+-Added support for keyboards without numpads
+-Added the option to change the key that opens the inventory menu
+-Added an option to disable health regeneration through the .ini
+-Added the option to disable certain statistics through the .ini
+-Added the option to have text only appear when a statistic is though through the.ini
+
+Features:
+-Please read each individual readme for detailed descriptions of what each mod does and for the controls
+-Please read the .ini readme for detailed descriptions of each .ini option
+
+Known Issues:
+-Using trainer to edit the time can cause problems with statistics
+
+Re-Uploading:
+You may modify, and use code from this program without my permission. I feel providing source code allows
+the modding community to grow.  If you do modify code, please credit me.  Please do not re-upload this yet.
+This mod is in an early stage.  It was published early for feedback on its development.  Many updates are to
+come so the re-uploaded version will not represent the final form of this mod.  I will change this when I feel
+the mod is complete.
+  
+Credits:
+-Plastic Tangerine for main coding
+-Alexander Blade for scripthook and parts of code from his trainer
+-xiaohe521 on Code Project for this code: http://www.codeproject.com/Articles/10809/A-Small-Class-to-Read-INI-File
+ which I used for .ini files.
+-Various users for their feedback throughout the mod's development
+

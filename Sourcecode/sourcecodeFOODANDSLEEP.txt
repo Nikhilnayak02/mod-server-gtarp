@@ -1,0 +1,523 @@
+#include "script.h"
+#include <string>
+#include <ctime>
+
+#pragma warning(disable : 4244 4305) // double <-> float conversions
+
+std::string statusText;
+DWORD statusTextDrawTicksMax;
+bool statusTextGxtEntry;
+bool showText = false;
+int wanted = 0;
+int model = 0;
+bool keyDown = false, blips = true, process = true;
+Blip blip, blip2, blip3, blip5, blip6, blip7, blip8, blip9, blip10, blip11, blip12, blip13, blip14, blip15, blip16, blip17;
+int distance, distance2, distance3, distance5, distance6, distance7, distance8, distance9, distance10, distance11, distance12, distance13, distance14, distance15, distance16, distance17, distance18, distance19,
+distance20, distance21, distance22, distance23;
+
+void update_status_text()
+{
+	if (showText == true)
+	{
+		UI::SET_TEXT_FONT(0);
+		UI::SET_TEXT_SCALE(0.0, 0.55);
+		UI::SET_TEXT_COLOUR(255, 255, 255, 255);
+		UI::SET_TEXT_WRAP(0.0, 1.0);
+		UI::SET_TEXT_CENTRE(1);
+		UI::SET_TEXT_DROPSHADOW(0, 0, 0, 0, 0);
+		UI::SET_TEXT_EDGE(1, 0, 0, 0, 205);
+		if (statusTextGxtEntry)
+		{
+			UI::_SET_TEXT_ENTRY((char *)statusText.c_str());
+		}
+		else
+		{
+			UI::_SET_TEXT_ENTRY("STRING");
+			UI::_ADD_TEXT_COMPONENT_STRING((char *)statusText.c_str());
+		}
+		UI::_DRAW_TEXT(0.5, 0.95);
+	}
+}
+
+void set_status_text(std::string str, DWORD time = 2500, bool isGxtEntry = false)
+{
+	statusText = str;
+	statusTextDrawTicksMax = time;
+	statusTextGxtEntry = isGxtEntry;
+}
+
+void update_text()
+{
+	Ped playerPed = PLAYER::PLAYER_PED_ID();
+	Player player = PLAYER::PLAYER_ID();
+	Vector3 position = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+	distance = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -1182.93f, -883.92f, 15.5f, 1);
+	distance2 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -1687.57f, -1092.02f, 13.15f, 1);
+	distance3 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -1552.40f, -440.19f, 40.51f, 1);
+	distance5 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -1198.05f, -792.00f, 16.35f, 1);
+	distance6 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -657.49, -678.90f, 31.47f, 1);
+	distance7 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -1546.65f, -467.20f, 36.18f, 1);
+	distance8 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 81.35f, 274.44f, 110.21f, 1);
+	distance9 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 1590.45f, 6448.58f, 25.31f, 1);
+	distance10 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 132.37f, -1462.06f, 29.35, 1);
+	distance11 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -11.85f, 516.64f, 174.62f, 1);
+	distance12 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -803.35f, 185.68f, 72.60f, 1);
+	distance13 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 1973.06f, 3819.37f, 33.42f, 1);
+	distance14 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 93.24f, -1291.39f, 29.26f, 1);
+	distance15 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -10.23f, -1430.29f, 31.10f, 1);
+	distance16 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -1153.85f, -1520.11f, 10.63f, 1);
+	distance17 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 556.11, -1758.89f, 34.94f, 1);
+	distance18 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 366.59f, 2625.34f, 46.16f, 1);
+	distance19 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -1338.83f, -941.20f, 13.55f, 1);
+	distance20 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -101.85f, 6344.84f, 37.00f, 1);
+	distance21 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -1481.53f, -652.98f, 31.08f, 1);
+	distance22 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 321.10f, -197.78f, 59.51f, 1);
+	distance23 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 1141.13f, 2654.67f, 39.65f, 1);
+	wanted = PLAYER::GET_PLAYER_WANTED_LEVEL(player);
+
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+	{
+		model = 0;
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+	{
+		model = 1;
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+	{
+		model = 2;
+	}
+
+	char statNameFull[32];
+	sprintf_s(statNameFull, "SP%d_TOTAL_CASH", model);
+	Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+	int val;
+	STATS::STAT_GET_INT(hash, &val, -1);
+
+	if (!(PED::IS_PED_IN_ANY_VEHICLE(playerPed, 0)))
+	{
+		if (wanted == 0)
+		{
+			if (distance < 2 && val >= 5 ||
+				distance2 < 2 && val >= 5 ||
+				distance3 < 2 && val >= 5 ||
+				distance5 < 2 && val >= 5 ||
+				distance6 < 2 && val >= 5 ||
+				distance7 < 2 && val >= 5 ||
+				distance8 < 2 && val >= 5 ||
+				distance9 < 2 && val >= 5 ||
+				distance10 < 2 && val >= 5)
+			{
+				set_status_text("Press E to eat.");
+				update_status_text();
+			}
+			else if (distance < 2 && val < 5 ||
+				distance2 < 2 && val < 5 ||
+				distance3 < 2 && val < 5 ||
+				distance5 < 2 && val < 5 ||
+				distance6 < 2 && val < 5 ||
+				distance7 < 2 && val < 5 ||
+				distance8 < 2 && val < 5 ||
+				distance9 < 2 && val < 5 ||
+				distance10 < 2 && val < 5)
+			{
+				set_status_text("Not enough money for food.");
+				update_status_text();
+			}
+		}
+		else if (distance < 2 ||
+			distance2 < 2 ||
+			distance3 < 2 ||
+			distance5 < 2 ||
+			distance6 < 2 ||
+			distance7 < 2 ||
+			distance8 < 2 ||
+			distance9 < 2 ||
+			distance10 < 2)
+		{
+			set_status_text("You need to lose the police before we can serve you.");
+			update_status_text();
+		}
+	}
+
+	if (!(PED::IS_PED_IN_ANY_VEHICLE(playerPed, 0)))
+	{
+		if (distance11 < 1 ||
+			distance12 < 1 ||
+			distance13 < 1 ||
+			distance14 < 1 ||
+			distance15 < 1 ||
+			distance16 < 1)
+		{
+			set_status_text("Press E to eat food from the fridge.");
+			update_status_text();
+		}
+	}
+
+	if (!(PED::IS_PED_IN_ANY_VEHICLE(playerPed, 0)))
+	{
+		if (wanted == 0)
+		{
+			if (distance17 < 2 && val >= 200 ||
+				distance18 < 2 && val >= 200 ||
+				distance19 < 2 && val >= 200 ||
+				distance20 < 2 && val >= 200 ||
+				distance21 < 2 && val >= 200 ||
+				distance22 < 2 && val >= 200 ||
+				distance23 < 2 && val >= 200)
+			{
+				set_status_text("Press E to stay in the motel.");
+				update_status_text();
+			}
+			else if (distance17 < 2 && val >= 200 ||
+				distance18 < 2 && val < 200 ||
+				distance19 < 2 && val < 200 ||
+				distance20 < 2 && val < 200 ||
+				distance21 < 2 && val < 200 ||
+				distance22 < 2 && val < 200 ||
+				distance23 < 2 && val < 200)
+			{
+				set_status_text("You don't have enough money to stay in the motel.");
+				update_status_text();
+			}
+		}
+		else if (distance17 < 2 ||
+			distance18 < 2 ||
+			distance19 < 2 ||
+			distance20 < 2 ||
+			distance21 < 2 ||
+			distance22 < 2 ||
+			distance23 < 2)
+		{
+			set_status_text("You need to lose the police before you can stay in the motel.");
+			update_status_text();
+		}
+	}
+
+	update_status_text();
+}
+
+void update()
+{
+	Ped playerPed = PLAYER::PLAYER_PED_ID();
+	Vector3 position = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+	int distance = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -1182.93f, -883.92f, 15.5f, 1);
+
+	if (!(PED::IS_PED_IN_ANY_VEHICLE(playerPed, 0)))
+	{
+		if (distance < 2 ||
+			distance2 < 2 ||
+			distance3 < 2 ||
+			distance5 < 2 ||
+			distance6 < 2 ||
+			distance7 < 2 ||
+			distance8 < 2 ||
+			distance9 < 2 ||
+			distance10 < 2)
+		{
+			ENTITY::GET_ENTITY_MODEL(playerPed);
+			showText = true;
+			char statNameFull[32];
+			sprintf_s(statNameFull, "SP%d_TOTAL_CASH", model);
+			Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+			int val;
+			STATS::STAT_GET_INT(hash, &val, -1);
+			if (GetAsyncKeyState('E') && val >= 5 && wanted == 0)
+			{
+				ENTITY::FREEZE_ENTITY_POSITION(playerPed, true);
+				showText = false;
+				char statNameFull[32];
+				sprintf_s(statNameFull, "SP%d_TOTAL_CASH", model);
+				Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+				int val;
+				STATS::STAT_GET_INT(hash, &val, -1);
+				val -= 5;
+				STATS::STAT_SET_INT(hash, val, 1);
+				ENTITY::SET_ENTITY_HEALTH(playerPed, ENTITY::GET_ENTITY_MAX_HEALTH(playerPed));
+				int thing = 2500;
+				CAM::DO_SCREEN_FADE_OUT(thing);
+				WAIT(2500);
+				int hour = TIME::GET_CLOCK_HOURS();
+				int min = TIME::GET_CLOCK_MINUTES();
+				min += 30;
+				if (min > 60)
+				{
+					min -= 60;
+					hour += 1;
+				}
+				if (hour >= 24)
+				{
+					hour = 0;
+				}
+				TIME::SET_CLOCK_TIME(hour, min, 0);
+				ENTITY::FREEZE_ENTITY_POSITION(playerPed, false);
+				CAM::DO_SCREEN_FADE_IN(thing);
+				WAIT(2500);
+				WAIT(5000);
+			}
+		}
+		else if (distance11 < 1 ||
+			distance12 < 1 ||
+			distance13 < 1 ||
+			distance14 < 1 ||
+			distance15 < 1 ||
+			distance16 < 1)
+		{
+			showText = true;
+			if (GetAsyncKeyState('E'))
+			{
+				showText = false;
+				ENTITY::SET_ENTITY_HEALTH(playerPed, ENTITY::GET_ENTITY_MAX_HEALTH(playerPed));
+				WAIT(5000);
+			}
+		}
+		else if (distance17 < 3 ||
+			distance18 < 3 ||
+			distance19 < 3 ||
+			distance20 < 3 ||
+			distance21 < 3 ||
+			distance22 < 3 ||
+			distance23 < 3)
+		{
+			ENTITY::GET_ENTITY_MODEL(playerPed);
+			showText = true;
+			char statNameFull[32];
+			sprintf_s(statNameFull, "SP%d_TOTAL_CASH", model);
+			Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+			int val;
+			STATS::STAT_GET_INT(hash, &val, -1);
+			if (GetAsyncKeyState('E') && val >= 200 && wanted == 0)
+			{
+				ENTITY::FREEZE_ENTITY_POSITION(playerPed, true);
+				showText = false;
+				char statNameFull[32];
+				sprintf_s(statNameFull, "SP%d_TOTAL_CASH", model);
+				Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+				int val;
+				STATS::STAT_GET_INT(hash, &val, -1);
+				val -= 200;
+				STATS::STAT_SET_INT(hash, val, 1);
+				int thing = 2500;
+				CAM::DO_SCREEN_FADE_OUT(thing);
+				WAIT(2500);
+				int hour = TIME::GET_CLOCK_HOURS();
+				int min = TIME::GET_CLOCK_MINUTES();
+				hour += 10;
+				if (min > 60)
+				{
+					min -= 60;
+					hour += 1;
+				}
+				if (hour >= 24)
+				{
+					hour -= 24;
+					TIME::SET_CLOCK_DATE((TIME::GET_CLOCK_DAY_OF_MONTH() + 1), TIME::GET_CLOCK_MONTH(), TIME::GET_CLOCK_YEAR());
+				}
+				TIME::SET_CLOCK_TIME(hour, min, 0);
+				ENTITY::FREEZE_ENTITY_POSITION(playerPed, false);
+				CAM::DO_SCREEN_FADE_IN(thing);
+				WAIT(2500);
+				WAIT(5000);
+			}
+		}
+		else
+		{
+			showText = false;
+			set_status_text("");
+		}
+	}
+
+	if (GetAsyncKeyState('B') && GetAsyncKeyState(VK_LCONTROL))
+	{
+		blips = !blips;
+		process = false;
+		WAIT(500);
+	}
+
+	if (blips == true && process == false)
+	{
+		blip = UI::ADD_BLIP_FOR_COORD(-1182.93f, -883.92f, 15.5f);
+		UI::SET_BLIP_SPRITE(blip, 93);
+		UI::SET_BLIP_DISPLAY(blip, (char)"you will never see this");
+		blip2 = UI::ADD_BLIP_FOR_COORD(-1687.57f, -1092.02f, 13.15f);
+		UI::SET_BLIP_SPRITE(blip2, 93);
+		UI::SET_BLIP_DISPLAY(blip2, (char)"you will never see this");
+		blip3 = UI::ADD_BLIP_FOR_COORD(-1552.40f, -440.19f, 40.51f);
+		UI::SET_BLIP_SPRITE(blip3, 93);
+		UI::SET_BLIP_DISPLAY(blip3, (char)"you will never see this");
+		blip5 = UI::ADD_BLIP_FOR_COORD(-1198.05f, -792.00f, 16.35f);
+		UI::SET_BLIP_SPRITE(blip5, 93);
+		UI::SET_BLIP_DISPLAY(blip5, (char)"you will never see this");
+		blip6 = UI::ADD_BLIP_FOR_COORD(-657.49, -678.90f, 31.47f);
+		UI::SET_BLIP_SPRITE(blip6, 93);
+		UI::SET_BLIP_DISPLAY(blip6, (char)"you will never see this");
+		blip7 = UI::ADD_BLIP_FOR_COORD(-1546.65f, -467.20f, 36.18f);
+		UI::SET_BLIP_SPRITE(blip7, 93);
+		UI::SET_BLIP_DISPLAY(blip7, (char)"you will never see this");
+		blip8 = UI::ADD_BLIP_FOR_COORD(81.35f, 274.44f, 110.21f);
+		UI::SET_BLIP_SPRITE(blip8, 93);
+		UI::SET_BLIP_DISPLAY(blip8, (char)"you will never see this");
+		blip9 = UI::ADD_BLIP_FOR_COORD(1590.45f, 6448.58f, 25.31f);
+		UI::SET_BLIP_SPRITE(blip9, 93);
+		UI::SET_BLIP_DISPLAY(blip9, (char)"you will never see this");
+		blip10 = UI::ADD_BLIP_FOR_COORD(132.37f, -1462.06f, 29.35);
+		UI::SET_BLIP_SPRITE(blip10, 93);
+		UI::SET_BLIP_DISPLAY(blip10, (char)"you will never see this");
+		blip11 = UI::ADD_BLIP_FOR_COORD(556.11f, -1758.89f, 33.44);
+		UI::SET_BLIP_SPRITE(blip11, 374);
+		UI::SET_BLIP_DISPLAY(blip11, (char)"you will never see this");
+		blip12 = UI::ADD_BLIP_FOR_COORD(366.59f, 2625.34f, 44.66f);
+		UI::SET_BLIP_SPRITE(blip12, 374);
+		UI::SET_BLIP_DISPLAY(blip12, (char)"you will never see this");
+		blip13 = UI::ADD_BLIP_FOR_COORD(-1338.83f, -941.20f, 12.35f);
+		UI::SET_BLIP_SPRITE(blip13, 374);
+		UI::SET_BLIP_DISPLAY(blip13, (char)"you will never see this");
+		blip14 = UI::ADD_BLIP_FOR_COORD(-101.85f, 6344.84f, 35.50f);
+		UI::SET_BLIP_SPRITE(blip14, 374);
+		UI::SET_BLIP_DISPLAY(blip14, (char)"you will never see this");
+		blip15 = UI::ADD_BLIP_FOR_COORD(-1481.53f, -652.98f, 29.58f);
+		UI::SET_BLIP_SPRITE(blip15, 374);
+		UI::SET_BLIP_DISPLAY(blip15, (char)"you will never see this");
+		blip16 = UI::ADD_BLIP_FOR_COORD(321.10f, -197.78f, 58.01f);
+		UI::SET_BLIP_SPRITE(blip16, 374);
+		UI::SET_BLIP_DISPLAY(blip16, (char)"you will never see this");
+		blip17 = UI::ADD_BLIP_FOR_COORD(1141.13f, 2654.67f, 38.15f);
+		UI::SET_BLIP_SPRITE(blip17, 374);
+		UI::SET_BLIP_DISPLAY(blip17, (char)"you will never see this");
+		UI::SET_BLIP_AS_SHORT_RANGE(blip, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip2, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip3, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip10, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip5, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip6, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip7, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip8, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip9, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip17, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip16, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip15, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip14, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip13, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip12, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip11, true);
+		process = true;
+	}
+	if (blips == false && process == false)
+	{
+		UI::REMOVE_BLIP(&blip);
+		UI::REMOVE_BLIP(&blip2);
+		UI::REMOVE_BLIP(&blip3);
+		UI::REMOVE_BLIP(&blip5);
+		UI::REMOVE_BLIP(&blip6);
+		UI::REMOVE_BLIP(&blip7);
+		UI::REMOVE_BLIP(&blip8);
+		UI::REMOVE_BLIP(&blip9);
+		UI::REMOVE_BLIP(&blip10);
+		UI::REMOVE_BLIP(&blip11);
+		UI::REMOVE_BLIP(&blip12);
+		UI::REMOVE_BLIP(&blip13);
+		UI::REMOVE_BLIP(&blip14);
+		UI::REMOVE_BLIP(&blip15);
+		UI::REMOVE_BLIP(&blip16);
+		UI::REMOVE_BLIP(&blip17);
+		process = true;
+	}
+
+	GRAPHICS::DRAW_MARKER(2, -1182.93f, -883.92f, 15.25f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -1687.57f, -1092.02f, 14.65f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -1552.40f, -440.19f, 42.01f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -1198.05f, -792.00f, 17.85f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -657.49, -678.90f, 32.97f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -1546.65f, -467.20f, 37.68f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 81.35f, 274.44f, 111.71f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 1590.45f, 6448.58f, 26.81f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 132.37f, -1462.06f, 30.85, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 556.11, -1758.89f, 34.94f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 366.59f, 2625.34f, 46.16f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -1338.83f, -941.20f, 13.55f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -101.85f, 6344.84f, 37.00f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -1481.53f, -652.98f, 31.08f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 321.10f, -197.78f, 59.51f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 1141.13f, 2654.67f, 39.65f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+}
+
+void main()
+{
+	while (true)
+	{
+		update();
+		update_text();
+		WAIT(0);
+	}
+}
+
+void ScriptMain()
+{
+	blip = UI::ADD_BLIP_FOR_COORD(-1182.93f, -883.92f, 15.5f);
+	UI::SET_BLIP_SPRITE(blip, 93);
+	UI::SET_BLIP_DISPLAY(blip, (char)"you will never see this");
+	blip2 = UI::ADD_BLIP_FOR_COORD(-1687.57f, -1092.02f, 13.15f);
+	UI::SET_BLIP_SPRITE(blip2, 93);
+	UI::SET_BLIP_DISPLAY(blip2, (char)"you will never see this");
+	blip3 = UI::ADD_BLIP_FOR_COORD(-1552.40f, -440.19f, 40.51f);
+	UI::SET_BLIP_SPRITE(blip3, 93);
+	UI::SET_BLIP_DISPLAY(blip3, (char)"you will never see this");
+	blip5 = UI::ADD_BLIP_FOR_COORD(-1198.05f, -792.00f, 16.35f);
+	UI::SET_BLIP_SPRITE(blip5, 93);
+	UI::SET_BLIP_DISPLAY(blip5, (char)"you will never see this");
+	blip6 = UI::ADD_BLIP_FOR_COORD(-657.49, -678.90f, 31.47f);
+	UI::SET_BLIP_SPRITE(blip6, 93);
+	UI::SET_BLIP_DISPLAY(blip6, (char)"you will never see this");
+	blip7 = UI::ADD_BLIP_FOR_COORD(-1546.65f, -467.20f, 36.18f);
+	UI::SET_BLIP_SPRITE(blip7, 93);
+	UI::SET_BLIP_DISPLAY(blip7, (char)"you will never see this");
+	blip8 = UI::ADD_BLIP_FOR_COORD(81.35f, 274.44f, 110.21f);
+	UI::SET_BLIP_SPRITE(blip8, 93);
+	UI::SET_BLIP_DISPLAY(blip8, (char)"you will never see this");
+	blip9 = UI::ADD_BLIP_FOR_COORD(1590.45f, 6448.58f, 25.31f);
+	UI::SET_BLIP_SPRITE(blip9, 93);
+	UI::SET_BLIP_DISPLAY(blip9, (char)"you will never see this");
+	blip10 = UI::ADD_BLIP_FOR_COORD(132.37f, -1462.06f, 29.35);
+	UI::SET_BLIP_SPRITE(blip10, 93);
+	UI::SET_BLIP_DISPLAY(blip10, (char)"you will never see this");
+	blip11 = UI::ADD_BLIP_FOR_COORD(556.11f, -1758.89f, 33.44);
+	UI::SET_BLIP_SPRITE(blip11, 374);
+	UI::SET_BLIP_DISPLAY(blip11, (char)"you will never see this");
+	blip12 = UI::ADD_BLIP_FOR_COORD(366.59f, 2625.34f, 44.66f);
+	UI::SET_BLIP_SPRITE(blip12, 374);
+	UI::SET_BLIP_DISPLAY(blip12, (char)"you will never see this");
+	blip13 = UI::ADD_BLIP_FOR_COORD(-1338.83f, -941.20f, 12.35f);
+	UI::SET_BLIP_SPRITE(blip13, 374);
+	UI::SET_BLIP_DISPLAY(blip13, (char)"you will never see this");
+	blip14 = UI::ADD_BLIP_FOR_COORD(-101.85f, 6344.84f, 35.50f);
+	UI::SET_BLIP_SPRITE(blip14, 374);
+	UI::SET_BLIP_DISPLAY(blip14, (char)"you will never see this");
+	blip15 = UI::ADD_BLIP_FOR_COORD(-1481.53f, -652.98f, 29.58f);
+	UI::SET_BLIP_SPRITE(blip15, 374);
+	UI::SET_BLIP_DISPLAY(blip15, (char)"you will never see this");
+	blip16 = UI::ADD_BLIP_FOR_COORD(321.10f, -197.78f, 58.01f);
+	UI::SET_BLIP_SPRITE(blip16, 374);
+	UI::SET_BLIP_DISPLAY(blip16, (char)"you will never see this");
+	blip17 = UI::ADD_BLIP_FOR_COORD(1141.13f, 2654.67f, 38.15f);
+	UI::SET_BLIP_SPRITE(blip17, 374);
+	UI::SET_BLIP_DISPLAY(blip17, (char)"you will never see this");
+	UI::SET_BLIP_AS_SHORT_RANGE(blip, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip2, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip3, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip10, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip5, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip6, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip7, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip8, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip9, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip17, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip16, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip15, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip14, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip13, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip12, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip11, true);
+
+	srand(GetTickCount());
+	main();
+}

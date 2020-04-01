@@ -1,0 +1,2042 @@
+#include "script.h"
+#include "keyboard.h"
+#include <string>
+#include <ctime>
+#include <cstdlib>
+#include "iostream"
+#include "IniWriter.h"
+#include "IniReader.h"
+
+#pragma warning(disable : 4244 4305) // double <-> float conversions
+
+CIniReader reader(".\\BasicNeeds.ini");
+CIniWriter writer(".\\BasicNeeds.ini");
+
+DWORD openKey;
+bool blips = true, process = true;
+
+Blip blip1, blip2, blip3, blip4, blip5, blip6, blip7, blip8, blip9, blip10, blip11, blip12, blip13, blip14, blip15, blip16, blip17, blip18, blip19;
+
+int pnq = 0, met = 0, ego = 0, smo = 0, pis = 0, eco = 0, snack, downTime = 0;
+
+int pnqM,
+pnqF,
+pnqT,
+metM,
+metF,
+metT,
+egoM,
+egoF,
+egoT,
+ecoM,
+ecoF,
+ecoT,
+pisM,
+pisF,
+pisT,
+smoM,
+smoF,
+smoT;
+
+int wanted = 0, baseModel, model, hour, baseHour, screenType;
+float shop1, shop2, shop3, shop4, shop5, shop6, shop7, shop8, shop9, shop10, shop11, shop12, shop13, shop14, shop15, shop16, shop17, shop18, shop19;
+bool gotModel = false, saving = false, drunkM = false, drunkF = false, drunkT = false, gotHour = false;
+
+std::string pnqText, metText, egoText, smoText, pisText, ecoText, shopText1, shopText2, shopText3, shopText4, shopText5, shopText6;
+
+std::string statusText;
+int openButton;
+DWORD statusTextDrawTicksMax;
+bool statusTextGxtEntry;
+bool showText = false;
+bool canPress = false, canPress2 = false;
+bool canBuy;
+bool shopOpen = false;
+
+void update_status_text()
+{
+	UI::SET_TEXT_FONT(0);
+	UI::SET_TEXT_SCALE(0.0, 0.55);
+	UI::SET_TEXT_COLOUR(255, 255, 255, 255);
+	UI::SET_TEXT_WRAP(0.0, 1.0);
+	UI::SET_TEXT_CENTRE(1);
+	UI::SET_TEXT_DROPSHADOW(0, 0, 0, 0, 0);
+	UI::SET_TEXT_EDGE(1, 0, 0, 0, 205);
+	if (statusTextGxtEntry)
+	{
+		UI::_SET_TEXT_ENTRY((char *)statusText.c_str());
+	}
+	else
+	{
+		UI::_SET_TEXT_ENTRY("STRING");
+		UI::_ADD_TEXT_COMPONENT_STRING((char *)statusText.c_str());
+	}
+	UI::_DRAW_TEXT(0.5, 0.95);
+}
+
+void set_status_text(std::string str, DWORD time = 2500, bool isGxtEntry = false)
+{
+	statusText = str;
+	statusTextDrawTicksMax = time;
+	statusTextGxtEntry = isGxtEntry;
+}
+
+void draw_rect(float A_0, float A_1, float A_2, float A_3, int A_4, int A_5, int A_6, int A_7)
+{
+	GRAPHICS::DRAW_RECT((A_0 + (A_2 * 0.5f)), (A_1 + (A_3 * 0.5f)), A_2, A_3, A_4, A_5, A_6, A_7);
+}
+
+void draw_menu_line(std::string caption, float lineWidth, float lineHeight, float lineTop, float lineLeft, float textLeft, bool active, bool title, bool rescaleText = true)
+{
+	// default values
+	int text_col[4] = { 255, 255, 255, 255 },
+		rect_col[4] = { 0, 0, 0, 255 };
+	float text_scale = 0.35;
+	int font = 0;
+
+	// correcting values for active line
+	if (active)
+	{
+		text_col[0] = 0;
+		text_col[1] = 0;
+		text_col[2] = 0;
+
+		rect_col[0] = 255;
+		rect_col[1] = 255;
+		rect_col[2] = 255;
+	}
+
+	if (title)
+	{
+		rect_col[0] = 0;
+		rect_col[1] = 128;
+		rect_col[2] = 255;
+
+		text_col[0] = 255;
+		text_col[1] = 255;
+		text_col[2] = 255;
+
+		if (rescaleText) text_scale = 0.50;
+		font = 1;
+	}
+
+	int screen_w, screen_h;
+	GRAPHICS::GET_SCREEN_RESOLUTION(&screen_w, &screen_h);
+
+	textLeft += lineLeft;
+
+	float lineWidthScaled = lineWidth / (float)screen_w; // line width
+	float lineTopScaled = lineTop / (float)screen_h; // line top offset
+	float textLeftScaled = textLeft / (float)screen_w; // text left offset
+	float lineHeightScaled = lineHeight / (float)screen_h; // line height
+
+	float lineLeftScaled = lineLeft / (float)screen_w;
+
+	// this is how it's done in original scripts
+
+	// text upper part
+	UI::SET_TEXT_FONT(font);
+	UI::SET_TEXT_SCALE(0.0, text_scale);
+	UI::SET_TEXT_COLOUR(text_col[0], text_col[1], text_col[2], text_col[3]);
+	UI::SET_TEXT_CENTRE(0);
+	UI::SET_TEXT_DROPSHADOW(0, 0, 0, 0, 0);
+	UI::SET_TEXT_EDGE(0, 0, 0, 0, 0);
+	UI::_SET_TEXT_ENTRY("STRING");
+	UI::_ADD_TEXT_COMPONENT_STRING((LPSTR)caption.c_str());
+	UI::_DRAW_TEXT(textLeftScaled, (((lineTopScaled + 0.00278f) + lineHeightScaled) - 0.005f));
+
+	// text lower part
+	UI::SET_TEXT_FONT(font);
+	UI::SET_TEXT_SCALE(0.0, text_scale);
+	UI::SET_TEXT_COLOUR(text_col[0], text_col[1], text_col[2], text_col[3]);
+	UI::SET_TEXT_CENTRE(0);
+	UI::SET_TEXT_DROPSHADOW(0, 0, 0, 0, 0);
+	UI::SET_TEXT_EDGE(0, 0, 0, 0, 0);
+	UI::_0x521FB041D93DD0E4("STRING");
+	UI::_ADD_TEXT_COMPONENT_STRING((char*)caption.c_str());
+	int num25 = UI::_0x9040DFB09BE75706(textLeftScaled, (((lineTopScaled + 0.00278f) + lineHeightScaled) - 0.005f));
+
+	// rect
+	draw_rect(lineLeftScaled, lineTopScaled + (0.00278f),
+		lineWidthScaled, ((((float)(num25)* UI::_0xDB88A37483346780(text_scale, 0)) + (lineHeightScaled * 2.0f)) + 0.005f),
+		rect_col[0], rect_col[1], rect_col[2], rect_col[3]);
+}
+
+void draw_menu_line2(std::string caption, float lineWidth, float lineHeight, float lineTop, float lineLeft, float textLeft, bool active, bool title, bool rescaleText = true)
+{
+	// default values
+	int text_col[4] = { 255, 255, 255, 255 },
+		rect_col[4] = { 0, 0, 0, 255 };
+	float text_scale = 0.35;
+	int font = 0;
+
+	// correcting values for active line
+	if (active)
+	{
+		text_col[0] = 0;
+		text_col[1] = 0;
+		text_col[2] = 0;
+
+		rect_col[0] = 255;
+		rect_col[1] = 255;
+		rect_col[2] = 255;
+	}
+
+	if (title)
+	{
+		rect_col[0] = 0;
+		rect_col[1] = 153;
+		rect_col[2] = 0;
+
+		text_col[0] = 255;
+		text_col[1] = 255;
+		text_col[2] = 255;
+
+		if (rescaleText) text_scale = 0.50;
+		font = 1;
+	}
+
+	int screen_w, screen_h;
+	GRAPHICS::GET_SCREEN_RESOLUTION(&screen_w, &screen_h);
+
+	textLeft += lineLeft;
+
+	float lineWidthScaled = lineWidth / (float)screen_w; // line width
+	float lineTopScaled = lineTop / (float)screen_h; // line top offset
+	float textLeftScaled = textLeft / (float)screen_w; // text left offset
+	float lineHeightScaled = lineHeight / (float)screen_h; // line height
+
+	float lineLeftScaled = lineLeft / (float)screen_w;
+
+	// this is how it's done in original scripts
+
+	// text upper part
+	UI::SET_TEXT_FONT(font);
+	UI::SET_TEXT_SCALE(0.0, text_scale);
+	UI::SET_TEXT_COLOUR(text_col[0], text_col[1], text_col[2], text_col[3]);
+	UI::SET_TEXT_CENTRE(0);
+	UI::SET_TEXT_DROPSHADOW(0, 0, 0, 0, 0);
+	UI::SET_TEXT_EDGE(0, 0, 0, 0, 0);
+	UI::_SET_TEXT_ENTRY("STRING");
+	UI::_ADD_TEXT_COMPONENT_STRING((LPSTR)caption.c_str());
+	UI::_DRAW_TEXT(textLeftScaled, (((lineTopScaled + 0.00278f) + lineHeightScaled) - 0.005f));
+
+	// text lower part
+	UI::SET_TEXT_FONT(font);
+	UI::SET_TEXT_SCALE(0.0, text_scale);
+	UI::SET_TEXT_COLOUR(text_col[0], text_col[1], text_col[2], text_col[3]);
+	UI::SET_TEXT_CENTRE(0);
+	UI::SET_TEXT_DROPSHADOW(0, 0, 0, 0, 0);
+	UI::SET_TEXT_EDGE(0, 0, 0, 0, 0);
+	UI::_0x521FB041D93DD0E4("STRING");
+	UI::_ADD_TEXT_COMPONENT_STRING((char*)caption.c_str());
+	int num25 = UI::_0x9040DFB09BE75706(textLeftScaled, (((lineTopScaled + 0.00278f) + lineHeightScaled) - 0.005f));
+
+	// rect
+	draw_rect(lineLeftScaled, lineTopScaled + (0.00278f),
+		lineWidthScaled, ((((float)(num25)* UI::_0xDB88A37483346780(text_scale, 0)) + (lineHeightScaled * 2.0f)) + 0.005f),
+		rect_col[0], rect_col[1], rect_col[2], rect_col[3]);
+}
+
+void draw_menu_line3(std::string caption, float lineWidth, float lineHeight, float lineTop, float lineLeft, float textLeft, bool active, bool title, bool rescaleText = true)
+{
+	// default values
+	int text_col[4] = { 255, 255, 255, 255 },
+		rect_col[4] = { 0, 0, 0, 255 };
+	float text_scale = 0.35;
+	int font = 0;
+
+	// correcting values for active line
+	if (active)
+	{
+		text_col[0] = 0;
+		text_col[1] = 0;
+		text_col[2] = 0;
+
+		rect_col[0] = 255;
+		rect_col[1] = 255;
+		rect_col[2] = 255;
+	}
+
+	if (title)
+	{
+		rect_col[0] = 204;
+		rect_col[1] = 0;
+		rect_col[2] = 0;
+
+		text_col[0] = 255;
+		text_col[1] = 255;
+		text_col[2] = 255;
+
+		if (rescaleText) text_scale = 0.50;
+		font = 1;
+	}
+
+	int screen_w, screen_h;
+	GRAPHICS::GET_SCREEN_RESOLUTION(&screen_w, &screen_h);
+
+	textLeft += lineLeft;
+
+	float lineWidthScaled = lineWidth / (float)screen_w; // line width
+	float lineTopScaled = lineTop / (float)screen_h; // line top offset
+	float textLeftScaled = textLeft / (float)screen_w; // text left offset
+	float lineHeightScaled = lineHeight / (float)screen_h; // line height
+
+	float lineLeftScaled = lineLeft / (float)screen_w;
+
+	// this is how it's done in original scripts
+
+	// text upper part
+	UI::SET_TEXT_FONT(font);
+	UI::SET_TEXT_SCALE(0.0, text_scale);
+	UI::SET_TEXT_COLOUR(text_col[0], text_col[1], text_col[2], text_col[3]);
+	UI::SET_TEXT_CENTRE(0);
+	UI::SET_TEXT_DROPSHADOW(0, 0, 0, 0, 0);
+	UI::SET_TEXT_EDGE(0, 0, 0, 0, 0);
+	UI::_SET_TEXT_ENTRY("STRING");
+	UI::_ADD_TEXT_COMPONENT_STRING((LPSTR)caption.c_str());
+	UI::_DRAW_TEXT(textLeftScaled, (((lineTopScaled + 0.00278f) + lineHeightScaled) - 0.005f));
+
+	// text lower part
+	UI::SET_TEXT_FONT(font);
+	UI::SET_TEXT_SCALE(0.0, text_scale);
+	UI::SET_TEXT_COLOUR(text_col[0], text_col[1], text_col[2], text_col[3]);
+	UI::SET_TEXT_CENTRE(0);
+	UI::SET_TEXT_DROPSHADOW(0, 0, 0, 0, 0);
+	UI::SET_TEXT_EDGE(0, 0, 0, 0, 0);
+	UI::_0x521FB041D93DD0E4("STRING");
+	UI::_ADD_TEXT_COMPONENT_STRING((char*)caption.c_str());
+	int num25 = UI::_0x9040DFB09BE75706(textLeftScaled, (((lineTopScaled + 0.00278f) + lineHeightScaled) - 0.005f));
+
+	// rect
+	draw_rect(lineLeftScaled, lineTopScaled + (0.00278f),
+		lineWidthScaled, ((((float)(num25)* UI::_0xDB88A37483346780(text_scale, 0)) + (lineHeightScaled * 2.0f)) + 0.005f),
+		rect_col[0], rect_col[1], rect_col[2], rect_col[3]);
+}
+
+bool trainer_switch_pressed()
+{
+	return IsKeyJustUp(openButton);
+}
+
+bool trainer_switch_pressed2()
+{
+	return IsKeyJustUp('E');
+}
+
+void get_button_state(bool *a, bool *b, bool *up, bool *down)
+{
+	if (a) *a = IsKeyDown(VK_NUMPAD5) || IsKeyDown(VK_RETURN);
+	if (b) *b = IsKeyDown(VK_NUMPAD0) || trainer_switch_pressed() || IsKeyDown(VK_BACK) || IsKeyDown(VK_MENU);
+	if (up) *up = IsKeyDown(VK_NUMPAD8) || IsKeyDown(VK_LEFT);
+	if (down) *down = IsKeyDown(VK_NUMPAD2) || IsKeyDown(VK_RIGHT);
+}
+
+void menu_beep()
+{
+	AUDIO::PLAY_SOUND_FRONTEND(-1, "NAV_UP_DOWN", "HUD_FRONTEND_DEFAULT_SOUNDSET", 0);
+}
+
+void menu_deny()
+{
+	AUDIO::PLAY_SOUND_FRONTEND(-1, "DELETE", "HUD_DEATHMATCH_SOUNDSET", 0);
+}
+
+void distance()
+{
+	Ped playerPed = PLAYER::PLAYER_PED_ID();
+	Player player = PLAYER::PLAYER_ID();
+	Vector3 position = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+	wanted = PLAYER::GET_PLAYER_WANTED_LEVEL(player);
+
+	shop1 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 33.96f, -1343.21f, 29.49f, 1);
+	shop2 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -52.68, -1747.71, 29.42, 1);
+	shop3 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 1153.03, -320.50, 69.20, 1);
+	shop4 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 2553.69, 390.48, 108.62, 1);
+	shop5 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -1831.16, 789.74, 138.31, 1);
+	shop6 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -3045.70, 592.30, 7.90, 1);
+	shop7 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -3245.33, 1009.75, 12.83, 1);
+	shop8 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -717.26, -909.69, 19.21, 1);
+	shop9 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 540.22, 2666.06, 42.15, 1);
+	shop10 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 2679.16, 3289.64, 55.24, 1);
+	shop11 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 1966.32, 3748.16, 32.34, 1);
+	shop12 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 1707.82, 4929.66, 42.06, 1);
+	shop13 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 1738.13, 6414.62, 35.03, 1);
+	shop14 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 382.68, 327.91, 103.56, 1);
+	shop15 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 1136.94, -979.01, 46.41, 1);
+	shop16 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -1226.07, -907.25, 12.32, 1);
+	shop17 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -1486.40, -382.37, 40.16, 1);
+	shop18 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, -2969.68, 387.94, 15.04, 1);
+	shop19 = GAMEPLAY::GET_DISTANCE_BETWEEN_COORDS(position.x, position.y, position.z, 1169.00, 2707.68, 38.15, 1);
+
+	GRAPHICS::DRAW_MARKER(2, 33.96f, -1343.21f, 29.49f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -52.68, -1747.71, 29.42, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 1153.03, -320.50, 69.20, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 2553.69, 390.48, 108.62, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -1831.16, 789.74, 138.31, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -3045.70, 592.30, 7.90, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -3245.33, 1009.75, 12.83, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -717.26, -909.69, 19.21, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 540.22, 2666.06, 42.15, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 2679.16, 3289.64, 55.24, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 1966.32, 3748.16, 32.34, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 1707.82, 4929.66, 42.06, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 1738.13, 6414.62, 35.03, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 382.68, 327.91, 103.56, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 1136.94, -979.01, 46.41, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -1226.07, -907.25, 12.32, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -1486.40, -382.37, 40.16, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, -2969.68, 387.94, 15.04, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+	GRAPHICS::DRAW_MARKER(2, 1169.00, 2707.68, 38.15, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+
+	//GRAPHICS::DRAW_MARKER(2,  0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.0f, 0.75f, 0.75f, 0.75f, 204, 204, 0, 100, false, true, 2, false, false, false, false);
+
+	if (shop1 < 0.6f ||
+		shop2 < 0.6f ||
+		shop3 < 0.6f ||
+		shop4 < 0.6f ||
+		shop5 < 0.6f ||
+		shop6 < 0.6f ||
+		shop7 < 0.6f ||
+		shop8 < 0.6f ||
+		shop9 < 0.6f ||
+		shop10 < 0.6f ||
+		shop11 < 0.6f ||
+		shop12 < 0.6f ||
+		shop13 < 0.6f ||
+		shop14 < 0.6f)
+	{
+		if (wanted == 0)
+		{
+			set_status_text("Press E to shop.");
+			canPress = true;
+		}
+		else
+		{
+			set_status_text("Lose the cops before shopping.");
+		}
+	}
+	else if (shop15 < 0.6f ||
+		shop16 < 0.6f ||
+		shop17 < 0.6f ||
+		shop18 < 0.6f ||
+		shop19 < 0.6f)
+	{
+		if (wanted == 0)
+		{
+			set_status_text("Press E to shop.");
+			canPress2 = true;
+		}
+		else
+		{
+			set_status_text("Lose the cops before shopping.");
+		}
+	}
+	else if (shop1 > 0.5f)
+	{
+		canPress = false;
+		canPress2 = false;
+		set_status_text("");
+	}
+}
+
+void inventory()
+{
+	if (screenType == 2)
+	{
+		if (pnq == 0)
+			pnqText = "P's & Q's					0";
+		if (pnq == 1)
+			pnqText = "P's & Q's					1";
+		if (pnq == 2)
+			pnqText = "P's & Q's					2";
+		if (pnq == 3)
+			pnqText = "P's & Q's					3";
+		if (pnq == 4)
+			pnqText = "P's & Q's					4";
+		if (pnq == 5)
+			pnqText = "P's & Q's					5";
+		if (pnq == 6)
+			pnqText = "P's & Q's					6";
+		if (pnq == 7)
+			pnqText = "P's & Q's					7";
+		if (pnq == 8)
+			pnqText = "P's & Q's					8";
+		if (pnq == 9)
+			pnqText = "P's & Q's					9";
+		if (pnq == 10)
+			pnqText = "P's & Q's					10";
+
+		if (ego == 0)
+			egoText = "EgoChaser				0";
+		if (ego == 1)
+			egoText = "EgoChaser				1";
+		if (ego == 2)
+			egoText = "EgoChaser				2";
+		if (ego == 3)
+			egoText = "EgoChaser				3";
+		if (ego == 4)
+			egoText = "EgoChaser				4";
+		if (ego == 5)
+			egoText = "EgoChaser				5";
+		if (ego == 6)
+			egoText = "EgoChaser				6";
+		if (ego == 7)
+			egoText = "EgoChaser				7";
+		if (ego == 8)
+			egoText = "EgoChaser				8";
+		if (ego == 9)
+			egoText = "EgoChaser				9";
+		if (ego == 10)
+			egoText = "EgoChaser				10";
+
+		if (met == 0)
+			metText = "Meteorite				0";
+		if (met == 1)
+			metText = "Meteorite				1";
+		if (met == 2)
+			metText = "Meteorite				2";
+		if (met == 3)
+			metText = "Meteorite				3";
+		if (met == 4)
+			metText = "Meteorite				4";
+		if (met == 5)
+			metText = "Meteorite				5";
+		if (met == 6)
+			metText = "Meteorite				6";
+		if (met == 7)
+			metText = "Meteorite				7";
+		if (met == 8)
+			metText = "Meteorite				8";
+		if (met == 9)
+			metText = "Meteorite				9";
+		if (met == 10)
+			metText = "Meteorite				10";
+
+		if (eco == 0)
+			ecoText = "eCola					0";
+		if (eco == 1)
+			ecoText = "eCola					1";
+		if (eco == 2)
+			ecoText = "eCola					2";
+		if (eco == 3)
+			ecoText = "eCola					3";
+		if (eco == 4)
+			ecoText = "eCola					4";
+		if (eco == 5)
+			ecoText = "eCola					5";
+		if (eco == 6)
+			ecoText = "eCola					6";
+		if (eco == 7)
+			ecoText = "eCola					7";
+		if (eco == 8)
+			ecoText = "eCola					8";
+		if (eco == 9)
+			ecoText = "eCola					9";
+		if (eco == 10)
+			ecoText = "eCola					10";
+
+		if (pis == 0)
+			pisText = "Piswasser				0";
+		if (pis == 1)
+			pisText = "Piswasser				1";
+		if (pis == 2)
+			pisText = "Piswasser				2";
+		if (pis == 3)
+			pisText = "Piswasser				3";
+		if (pis == 4)
+			pisText = "Piswasser				4";
+		if (pis == 5)
+			pisText = "Piswasser				5";
+		if (pis == 6)
+			pisText = "Piswasser				6";
+		if (pis == 7)
+			pisText = "Piswasser				7";
+		if (pis == 8)
+			pisText = "Piswasser				8";
+		if (pis == 9)
+			pisText = "Piswasser				9";
+		if (pis == 10)
+			pisText = "Piswasser				10";
+
+		if (smo == 0)
+			smoText = "Smokes					0";
+		if (smo == 1)
+			smoText = "Smokes					1";
+		if (smo == 2)
+			smoText = "Smokes					2";
+		if (smo == 3)
+			smoText = "Smokes					3";
+		if (smo == 4)
+			smoText = "Smokes					4";
+		if (smo == 5)
+			smoText = "Smokes					5";
+		if (smo == 6)
+			smoText = "Smokes					6";
+		if (smo == 7)
+			smoText = "Smokes					7";
+		if (smo == 8)
+			smoText = "Smokes					8";
+		if (smo == 9)
+			smoText = "Smokes					9";
+		if (smo == 10)
+			smoText = "Smokes					10";
+
+		shopText1 = "P's & Q's					$1";
+		shopText2 = "EgoChaser				$2";
+		shopText3 = "Meteorite				$4";
+		shopText4 = "eCola					$5";
+		shopText5 = "Piswasser				$5";
+		shopText6 = "Pack of Redwood			$7";
+	}
+	else
+	{
+		if (pnq == 0)
+			pnqText = "P's & Q's						0";
+		if (pnq == 1)
+			pnqText = "P's & Q's						1";
+		if (pnq == 2)
+			pnqText = "P's & Q's						2";
+		if (pnq == 3)
+			pnqText = "P's & Q's						3";
+		if (pnq == 4)
+			pnqText = "P's & Q's						4";
+		if (pnq == 5)
+			pnqText = "P's & Q's						5";
+		if (pnq == 6)
+			pnqText = "P's & Q's						6";
+		if (pnq == 7)
+			pnqText = "P's & Q's						7";
+		if (pnq == 8)
+			pnqText = "P's & Q's						8";
+		if (pnq == 9)
+			pnqText = "P's & Q's						9";
+		if (pnq == 10)
+			pnqText = "P's & Q's						10";
+
+		if (ego == 0)
+			egoText = "EgoChaser					0";
+		if (ego == 1)
+			egoText = "EgoChaser					1";
+		if (ego == 2)
+			egoText = "EgoChaser					2";
+		if (ego == 3)
+			egoText = "EgoChaser					3";
+		if (ego == 4)
+			egoText = "EgoChaser					4";
+		if (ego == 5)
+			egoText = "EgoChaser					5";
+		if (ego == 6)
+			egoText = "EgoChaser					6";
+		if (ego == 7)
+			egoText = "EgoChaser					7";
+		if (ego == 8)
+			egoText = "EgoChaser					8";
+		if (ego == 9)
+			egoText = "EgoChaser					9";
+		if (ego == 10)
+			egoText = "EgoChaser					10";
+
+		if (met == 0)
+			metText = "Meteorite						0";
+		if (met == 1)
+			metText = "Meteorite						1";
+		if (met == 2)
+			metText = "Meteorite						2";
+		if (met == 3)
+			metText = "Meteorite						3";
+		if (met == 4)
+			metText = "Meteorite						4";
+		if (met == 5)
+			metText = "Meteorite						5";
+		if (met == 6)
+			metText = "Meteorite						6";
+		if (met == 7)
+			metText = "Meteorite						7";
+		if (met == 8)
+			metText = "Meteorite						8";
+		if (met == 9)
+			metText = "Meteorite						9";
+		if (met == 10)
+			metText = "Meteorite						10";
+
+		if (eco == 0)
+			ecoText = "eCola						0";
+		if (eco == 1)
+			ecoText = "eCola						1";
+		if (eco == 2)
+			ecoText = "eCola						2";
+		if (eco == 3)
+			ecoText = "eCola						3";
+		if (eco == 4)
+			ecoText = "eCola						4";
+		if (eco == 5)
+			ecoText = "eCola						5";
+		if (eco == 6)
+			ecoText = "eCola						6";
+		if (eco == 7)
+			ecoText = "eCola						7";
+		if (eco == 8)
+			ecoText = "eCola						8";
+		if (eco == 9)
+			ecoText = "eCola						9";
+		if (eco == 10)
+			ecoText = "eCola						10";
+
+		if (pis == 0)
+			pisText = "Piswasser						0";
+		if (pis == 1)
+			pisText = "Piswasser						1";
+		if (pis == 2)
+			pisText = "Piswasser						2";
+		if (pis == 3)
+			pisText = "Piswasser						3";
+		if (pis == 4)
+			pisText = "Piswasser						4";
+		if (pis == 5)
+			pisText = "Piswasser						5";
+		if (pis == 6)
+			pisText = "Piswasser						6";
+		if (pis == 7)
+			pisText = "Piswasser						7";
+		if (pis == 8)
+			pisText = "Piswasser						8";
+		if (pis == 9)
+			pisText = "Piswasser						9";
+		if (pis == 10)
+			pisText = "Piswasser						10";
+
+		if (smo == 0)
+			smoText = "Smokes						0";
+		if (smo == 1)
+			smoText = "Smokes						1";
+		if (smo == 2)
+			smoText = "Smokes						2";
+		if (smo == 3)
+			smoText = "Smokes						3";
+		if (smo == 4)
+			smoText = "Smokes						4";
+		if (smo == 5)
+			smoText = "Smokes						5";
+		if (smo == 6)
+			smoText = "Smokes						6";
+		if (smo == 7)
+			smoText = "Smokes						7";
+		if (smo == 8)
+			smoText = "Smokes						8";
+		if (smo == 9)
+			smoText = "Smokes						9";
+		if (smo == 10)
+			smoText = "Smokes						10";
+
+		shopText1 = "P's & Q's						$1";
+		shopText2 = "EgoChaser					$2";
+		shopText3 = "Meteorite						$4";
+		shopText4 = "eCola						$5";
+		shopText5 = "Piswasser						$5";
+		shopText6 = "Pack of Redwood				$7";
+	}
+}
+
+void moneyMath()
+{
+	Ped playerPed = PLAYER::PLAYER_PED_ID();
+	int model2;
+	Player player = PLAYER::PLAYER_ID();
+	int wanted = PLAYER::GET_PLAYER_WANTED_LEVEL(player);
+
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+	{
+		model2 = 0;
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+	{
+		model2 = 1;
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+	{
+		model2 = 2;
+	}
+
+	showText = true;
+	char statNameFull[32];
+	sprintf_s(statNameFull, "SP%d_TOTAL_CASH", model2);
+	Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+	int val;
+	STATS::STAT_GET_INT(hash, &val, -1);
+
+	if (snack == 1)
+	{
+		if (val > 0 && pnq < 10)
+		{
+			canBuy = true;
+			pnq += 1;
+			if (model2 == 0)
+				pnqM += 1;
+			if (model2 == 1)
+				pnqF += 1;
+			if (model2 == 2)
+				pnqT += 1;
+			char statNameFull[32];
+			sprintf_s(statNameFull, "SP%d_TOTAL_CASH", model2);
+			Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+			int val;
+			STATS::STAT_GET_INT(hash, &val, -1);
+			val -= 1;
+			STATS::STAT_SET_INT(hash, val, 1);
+		}
+		else
+		{
+			canBuy = false;
+		}
+	}
+
+	if (snack == 2)
+	{
+		if (val >= 2 && ego < 10)
+		{
+			canBuy = true;
+			ego += 1;
+			if (model2 == 0)
+				egoM += 1;
+			if (model2 == 1)
+				egoF += 1;
+			if (model2 == 2)
+				egoT += 1;
+			char statNameFull[32];
+			sprintf_s(statNameFull, "SP%d_TOTAL_CASH", model2);
+			Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+			int val;
+			STATS::STAT_GET_INT(hash, &val, -1);
+			val -= 2;
+			STATS::STAT_SET_INT(hash, val, 1);
+		}
+		else
+		{
+			canBuy = false;
+		}
+	}
+
+	if (snack == 3)
+	{
+		if (val >= 4 && met < 10)
+		{
+			canBuy = true;
+			met += 1;
+			if (model2 == 0)
+				metM += 1;
+			if (model2 == 1)
+				metF += 1;
+			if (model2 == 2)
+				metT += 1;
+			char statNameFull[32];
+			sprintf_s(statNameFull, "SP%d_TOTAL_CASH", model2);
+			Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+			int val;
+			STATS::STAT_GET_INT(hash, &val, -1);
+			val -= 4;
+			STATS::STAT_SET_INT(hash, val, 1);
+		}
+		else
+		{
+			canBuy = false;
+		}
+	}
+
+	if (snack == 4)
+	{
+		if (val >= 5 && eco < 10)
+		{
+			canBuy = true;
+			eco += 1;
+			if (model2 == 0)
+				ecoM += 1;
+			if (model2 == 1)
+				ecoF += 1;
+			if (model2 == 2)
+				ecoT += 1;
+			char statNameFull[32];
+			sprintf_s(statNameFull, "SP%d_TOTAL_CASH", model2);
+			Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+			int val;
+			STATS::STAT_GET_INT(hash, &val, -1);
+			val -= 5;
+			STATS::STAT_SET_INT(hash, val, 1);
+		}
+		else
+		{
+			canBuy = false;
+		}
+	}
+
+	if (snack == 5)
+	{
+		if (val >= 5 && pis < 10)
+		{
+			canBuy = true;
+			pis += 1;
+			if (model2 == 0)
+				pisM += 1;
+			if (model2 == 1)
+				pisF += 1;
+			if (model2 == 2)
+				pisT += 1;
+			char statNameFull[32];
+			sprintf_s(statNameFull, "SP%d_TOTAL_CASH", model2);
+			Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+			int val;
+			STATS::STAT_GET_INT(hash, &val, -1);
+			val -= 5;
+			STATS::STAT_SET_INT(hash, val, 1);
+		}
+		else
+		{
+			canBuy = false;
+		}
+	}
+
+	if (snack == 6)
+	{
+		if (val >= 7 && smo <= 5)
+		{
+			canBuy = true;
+			smo += 5;
+			if (model2 == 0)
+				smoM += 5;
+			if (model2 == 1)
+				smoF += 5;
+			if (model2 == 2)
+				smoT += 5;
+			char statNameFull[32];
+			sprintf_s(statNameFull, "SP%d_TOTAL_CASH", model2);
+			Hash hash = GAMEPLAY::GET_HASH_KEY(statNameFull);
+			int val;
+			STATS::STAT_GET_INT(hash, &val, -1);
+			val -= 7;
+			STATS::STAT_SET_INT(hash, val, 1);
+		}
+		else
+		{
+			canBuy = false;
+		}
+	}
+}
+
+int activeLineIndexMain = 0;
+
+void reset_globals()
+{
+	activeLineIndexMain = 0;
+}
+
+void process_main_menu()
+{
+	const float lineWidth = 270.0;
+	const int lineCount = 6;
+	int model2;
+	Ped playerPed = PLAYER::PLAYER_PED_ID();
+	Player player = PLAYER::PLAYER_ID();
+	Object snack;
+
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+	{
+		model2 = 0;
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+	{
+		model2 = 1;
+	}
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+	{
+		model2 = 2;
+	}
+
+	std::string caption = "SNACKS";
+
+	std::string lineCaption[lineCount] = {
+		pnqText,
+		egoText,
+		metText,
+		ecoText,
+		pisText,
+		smoText
+	};
+
+	DWORD waitTime = 150;
+	while (true)
+	{
+		// timed menu draw, used for pause after active line switch
+		DWORD maxTickCount = GetTickCount() + waitTime;
+		do
+		{
+			// draw menu
+			draw_menu_line(caption, lineWidth, 15.0, 18.0, 0.0, 5.0, false, true);
+			for (int i = 0; i < lineCount; i++)
+				if (i != activeLineIndexMain)
+					draw_menu_line(lineCaption[i], lineWidth, 9.0, 60.0 + i * 36.0, 0.0, 9.0, false, false);
+			draw_menu_line(lineCaption[activeLineIndexMain], lineWidth + 1.0, 11.0, 56.0 + activeLineIndexMain * 36.0, 0.0, 7.0, true, false);
+			WAIT(0);
+		} while (GetTickCount() < maxTickCount);
+		waitTime = 0;
+
+		// process buttons
+		bool bSelect, bBack, bUp, bDown;
+		get_button_state(&bSelect, &bBack, &bUp, &bDown);
+		if (bSelect)
+		{
+			switch (activeLineIndexMain)
+			{
+			case 0:
+				if (pnq > 0)
+				{
+					menu_beep();
+					pnq -= 1;
+					if (model2 == 0)
+						pnqM -= 1;
+					if (model2 == 1)
+						pnqF -= 1;
+					if (model2 == 2)
+						pnqT -= 1;
+					inventory();
+					lineCaption[0] = pnqText;
+					if (!PED::IS_PED_IN_ANY_VEHICLE(playerPed, 1))
+					{
+						Hash current;
+						WEAPON::GET_CURRENT_PED_WEAPON(playerPed, &current, 1);
+						if (current != 0xA2719263)
+						{
+							WEAPON::SET_CURRENT_PED_WEAPON(playerPed, 0xA2719263, 1);
+						}
+
+						STREAMING::REQUEST_ANIM_DICT("mp_player_inteat@pnq");
+						while (!STREAMING::HAS_ANIM_DICT_LOADED("mp_player_inteat@pnq"))
+							WAIT(0);
+						Vector3 position = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+						snack = OBJECT::CREATE_OBJECT(GAMEPLAY::GET_HASH_KEY("prop_candy_pqs"), position.x, position.y, position.z, 0, 0, 0);
+						ENTITY::ATTACH_ENTITY_TO_ENTITY(snack, playerPed, PED::GET_PED_BONE_INDEX(playerPed, 125845), -0.02f, 0.0f, 0.0f, 0.0f, 0.0f, 90.0f, 1, 1, 1, 1, 0, 1); //x is left right
+						while (GetAsyncKeyState(VK_NUMPAD5) || GetAsyncKeyState(VK_RETURN))
+						{
+							AI::TASK_PLAY_ANIM(playerPed, "mp_player_inteat@pnq", "loop", 8.0f, 1.0f, 1000, 48, 0, 0, 0, 0);
+							ENTITY::FREEZE_ENTITY_POSITION(playerPed, false);
+							WAIT(1200);
+						}
+						OBJECT::DELETE_OBJECT(&snack);
+						WEAPON::SET_CURRENT_PED_WEAPON(playerPed, current, 1);
+					}
+					ENTITY::SET_ENTITY_HEALTH(playerPed, (ENTITY::GET_ENTITY_HEALTH(playerPed) + 10.0f));
+				}
+				else
+					menu_deny();
+				break;
+			case 1:
+				if (ego > 0)
+				{
+					menu_beep();
+					ego -= 1;
+					if (model2 == 0)
+						egoM -= 1;
+					if (model2 == 1)
+						egoF -= 1;
+					if (model2 == 2)
+						egoT -= 1;
+					inventory();
+					lineCaption[1] = egoText;
+					if (!PED::IS_PED_IN_ANY_VEHICLE(playerPed, 1))
+					{
+						Hash current;
+						WEAPON::GET_CURRENT_PED_WEAPON(playerPed, &current, 1);
+						if (current != 0xA2719263)
+						{
+							WEAPON::SET_CURRENT_PED_WEAPON(playerPed, 0xA2719263, 1);
+						}
+
+						STREAMING::REQUEST_ANIM_DICT("mp_player_inteat@burger");
+						while (!STREAMING::HAS_ANIM_DICT_LOADED("mp_player_inteat@burger"))
+							WAIT(0);
+						Vector3 position = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+						snack = OBJECT::CREATE_OBJECT(GAMEPLAY::GET_HASH_KEY("prop_choc_ego"), position.x, position.y, position.z, 0, 0, 0);
+						ENTITY::ATTACH_ENTITY_TO_ENTITY(snack, playerPed, PED::GET_PED_BONE_INDEX(playerPed, 125845), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1, 1, 1, 1, 0, 1); //x is left right
+						while (GetAsyncKeyState(VK_NUMPAD5) || GetAsyncKeyState(VK_RETURN))
+						{
+							AI::TASK_PLAY_ANIM(playerPed, "mp_player_inteat@burger", "mp_player_int_eat_burger", 8.0f, 1.0f, 1000, 48, 0, 0, 0, 0);
+							ENTITY::FREEZE_ENTITY_POSITION(playerPed, false);
+							WAIT(1200);
+						}
+						OBJECT::DELETE_OBJECT(&snack);
+						WEAPON::SET_CURRENT_PED_WEAPON(playerPed, current, 1);
+					}
+					ENTITY::SET_ENTITY_HEALTH(playerPed, (ENTITY::GET_ENTITY_HEALTH(playerPed) + 20.0f));
+				}
+				else
+					menu_deny();
+				break;
+			case 2:
+				if (met > 0)
+				{
+					menu_beep();
+					met -= 1;
+					if (model2 == 0)
+						metM -= 1;
+					if (model2 == 1)
+						metF -= 1;
+					if (model2 == 2)
+						metT -= 1;
+					inventory();
+					lineCaption[2] = metText;
+					if (!PED::IS_PED_IN_ANY_VEHICLE(playerPed, 1))
+					{
+						Hash current;
+						WEAPON::GET_CURRENT_PED_WEAPON(playerPed, &current, 1);
+						if (current != 0xA2719263)
+						{
+							WEAPON::SET_CURRENT_PED_WEAPON(playerPed, 0xA2719263, 1);
+						}
+
+						STREAMING::REQUEST_ANIM_DICT("mp_player_inteat@burger");
+						while (!STREAMING::HAS_ANIM_DICT_LOADED("mp_player_inteat@burger"))
+							WAIT(0);
+						Vector3 position = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+						snack = OBJECT::CREATE_OBJECT(GAMEPLAY::GET_HASH_KEY("prop_choc_meto"), position.x, position.y, position.z, 0, 0, 0);
+						ENTITY::ATTACH_ENTITY_TO_ENTITY(snack, playerPed, PED::GET_PED_BONE_INDEX(playerPed, 125845), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1, 1, 1, 1, 0, 1); //x is left right
+						while (GetAsyncKeyState(VK_NUMPAD5) || GetAsyncKeyState(VK_RETURN))
+						{
+							AI::TASK_PLAY_ANIM(playerPed, "mp_player_inteat@burger", "mp_player_int_eat_burger", 8.0f, 1.0f, 1000, 48, 0, 0, 0, 0);
+							ENTITY::FREEZE_ENTITY_POSITION(playerPed, false);
+							WAIT(1200);
+						}
+						OBJECT::DELETE_OBJECT(&snack);
+						WEAPON::SET_CURRENT_PED_WEAPON(playerPed, current, 1);
+					}
+					ENTITY::SET_ENTITY_HEALTH(playerPed, (ENTITY::GET_ENTITY_HEALTH(playerPed) + 15.0f));
+				}
+				else
+					menu_deny();
+				break;
+			case 3:
+				if (eco > 0)
+				{
+					menu_beep();
+					eco -= 1;
+					if (model2 == 0)
+						ecoM -= 1;
+					if (model2 == 1)
+						ecoF -= 1;
+					if (model2 == 2)
+						ecoT -= 1;
+					inventory();
+					lineCaption[3] = ecoText;
+					if (!PED::IS_PED_IN_ANY_VEHICLE(playerPed, 1))
+					{
+						Hash current;
+						WEAPON::GET_CURRENT_PED_WEAPON(playerPed, &current, 1);
+						if (current != 0xA2719263)
+						{
+							WEAPON::SET_CURRENT_PED_WEAPON(playerPed, 0xA2719263, 1);
+						}
+
+						STREAMING::REQUEST_ANIM_DICT("mp_player_intdrink");
+						while (!STREAMING::HAS_ANIM_DICT_LOADED("mp_player_intdrink"))
+							WAIT(0);
+						Vector3 position = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+						snack = OBJECT::CREATE_OBJECT(GAMEPLAY::GET_HASH_KEY("prop_ecola_can"), position.x, position.y, position.z, 0, 0, 0);
+						ENTITY::ATTACH_ENTITY_TO_ENTITY(snack, playerPed, PED::GET_PED_BONE_INDEX(playerPed, 125845), 0.0f, 0.01f, -0.02f, 0.0f, 0.0f, 0.0f, 1, 1, 1, 1, 0, 1); //x is left right
+						while (GetAsyncKeyState(VK_NUMPAD5) || GetAsyncKeyState(VK_RETURN))
+						{
+							AI::TASK_PLAY_ANIM(playerPed, "mp_player_intdrink", "loop", 8.0f, 1.0f, 1000, 48, 0, 0, 0, 0);
+							ENTITY::FREEZE_ENTITY_POSITION(playerPed, false);
+							WAIT(1200);
+						}
+						OBJECT::DELETE_OBJECT(&snack);
+						WEAPON::SET_CURRENT_PED_WEAPON(playerPed, current, 1);
+					}
+					ENTITY::SET_ENTITY_HEALTH(playerPed, (ENTITY::GET_ENTITY_HEALTH(playerPed) + 30.0f));
+				}
+				else
+					menu_deny();
+				break;
+			case 4:
+				if (pis > 0)
+				{
+					menu_beep();
+					pis -= 1;
+					if (model2 == 0)
+						pisM -= 1;
+					if (model2 == 1)
+						pisF -= 1;
+					if (model2 == 2)
+						pisT -= 1;
+					inventory();
+					lineCaption[4] = pisText;
+					if (!PED::IS_PED_IN_ANY_VEHICLE(playerPed, 1))
+					{
+						Hash current;
+						WEAPON::GET_CURRENT_PED_WEAPON(playerPed, &current, 1);
+						if (current != 0xA2719263)
+						{
+							WEAPON::SET_CURRENT_PED_WEAPON(playerPed, 0xA2719263, 1);
+						}
+
+						STREAMING::REQUEST_ANIM_DICT("mp_player_intdrink");
+						while (!STREAMING::HAS_ANIM_DICT_LOADED("mp_player_intdrink"))
+							WAIT(0);
+						Vector3 position = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+						snack = OBJECT::CREATE_OBJECT(GAMEPLAY::GET_HASH_KEY("prop_amb_beer_bottle"), position.x, position.y, position.z, 0, 0, 0);
+						ENTITY::ATTACH_ENTITY_TO_ENTITY(snack, playerPed, PED::GET_PED_BONE_INDEX(playerPed, 125845), 0.0f, 0.01f, -0.02f, 0.0f, 0.0f, 0.0f, 1, 1, 1, 1, 0, 1); //x is left right
+						while (GetAsyncKeyState(VK_NUMPAD5) || GetAsyncKeyState(VK_RETURN))
+						{
+							AI::TASK_PLAY_ANIM(playerPed, "mp_player_intdrink", "loop_bottle", 8.0f, 1.0f, 1000, 48, 0, 0, 0, 0);
+							ENTITY::FREEZE_ENTITY_POSITION(playerPed, false);
+							WAIT(1500);
+						}
+						OBJECT::DELETE_OBJECT(&snack);
+						WEAPON::SET_CURRENT_PED_WEAPON(playerPed, current, 1);
+					}
+					if (model2 == 0)
+					{
+						if (drunkM == false)
+						{
+							CAM::SHAKE_CINEMATIC_CAM("DRUNK_SHAKE", 2.0f);
+							CAM::SHAKE_GAMEPLAY_CAM("DRUNK_SHAKE", 2.0f);
+							CAM::SET_CAM_SHAKE_AMPLITUDE(-1, 5.0f);
+							STREAMING::REQUEST_ANIM_DICT("move_m@drunk@slightlydrunk");
+							while (!STREAMING::HAS_ANIM_DICT_LOADED("move_m@drunk@slightlydrunk"))
+								WAIT(0);
+							PED::SET_PED_MOVEMENT_CLIPSET(playerPed, "move_m@drunk@slightlydrunk", 0.75f);
+							PED::SET_PED_CAN_PLAY_AMBIENT_ANIMS(playerPed, 0);
+							PED::SET_PED_ALTERNATE_MOVEMENT_ANIM(playerPed, 0, "move_m@drunk@slightlydrunk", "idle", 2.0f, 1);
+							AUDIO::SET_PED_IS_DRUNK(playerPed, true);
+							drunkM = true;
+						}
+					}
+
+					if (model2 == 1)
+					{
+						if (drunkF == false)
+						{
+							CAM::SHAKE_CINEMATIC_CAM("DRUNK_SHAKE", 2.0f);
+							CAM::SHAKE_GAMEPLAY_CAM("DRUNK_SHAKE", 2.0f);
+							CAM::SET_CAM_SHAKE_AMPLITUDE(-1, 5.0f);
+							STREAMING::REQUEST_ANIM_DICT("move_m@drunk@slightlydrunk");
+							while (!STREAMING::HAS_ANIM_DICT_LOADED("move_m@drunk@slightlydrunk"))
+								WAIT(0);
+							PED::SET_PED_MOVEMENT_CLIPSET(playerPed, "move_m@drunk@slightlydrunk", 0.75f);
+							PED::SET_PED_CAN_PLAY_AMBIENT_ANIMS(playerPed, 0);
+							PED::SET_PED_ALTERNATE_MOVEMENT_ANIM(playerPed, 0, "move_m@drunk@slightlydrunk", "idle", 2.0f, 1);
+							AUDIO::SET_PED_IS_DRUNK(playerPed, true);
+							drunkF = true;
+						}
+					}
+					if (model2 == 2)
+					{
+						if (drunkT == false)
+						{
+							CAM::SHAKE_CINEMATIC_CAM("DRUNK_SHAKE", 2.0f);
+							CAM::SHAKE_GAMEPLAY_CAM("DRUNK_SHAKE", 2.0f);
+							CAM::SET_CAM_SHAKE_AMPLITUDE(-1, 5.0f);
+							STREAMING::REQUEST_ANIM_DICT("move_m@drunk@slightlydrunk");
+							while (!STREAMING::HAS_ANIM_DICT_LOADED("move_m@drunk@slightlydrunk"))
+								WAIT(0);
+							PED::SET_PED_MOVEMENT_CLIPSET(playerPed, "move_m@drunk@slightlydrunk", 0.75f);
+							PED::SET_PED_CAN_PLAY_AMBIENT_ANIMS(playerPed, 0);
+							PED::SET_PED_ALTERNATE_MOVEMENT_ANIM(playerPed, 0, "move_m@drunk@slightlydrunk", "idle", 2.0f, 1);
+							AUDIO::SET_PED_IS_DRUNK(playerPed, true);
+							drunkT = true;
+						}
+					}
+				}
+				else
+					menu_deny();
+				break;
+			case 5:
+				if (smo > 0)
+				{
+					menu_beep();
+					smo -= 1;
+					if (model2 == 0)
+						smoM -= 1;
+					if (model2 == 1)
+						smoF -= 1;
+					if (model2 == 2)
+						smoT -= 1;
+					inventory();
+					lineCaption[5] = smoText;
+					if (!PED::IS_PED_IN_ANY_VEHICLE(playerPed, 1))
+					{
+						STREAMING::_0xB80D8756B4668AB6("scr_carsteal4");
+						Hash current;
+						WEAPON::GET_CURRENT_PED_WEAPON(playerPed, &current, 1);
+						if (current != 0xA2719263)
+						{
+							WEAPON::SET_CURRENT_PED_WEAPON(playerPed, 0xA2719263, 1);
+						}
+
+						STREAMING::REQUEST_ANIM_DICT("mp_player_int_uppersmoke");
+						while (!STREAMING::HAS_ANIM_DICT_LOADED("mp_player_int_uppersmoke"))
+							WAIT(0);
+						Vector3 position = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+						snack = OBJECT::CREATE_OBJECT(GAMEPLAY::GET_HASH_KEY("prop_amb_ciggy_01"), position.x, position.y, position.z, 0, 0, 0);
+						ENTITY::ATTACH_ENTITY_TO_ENTITY(snack, playerPed, PED::GET_PED_BONE_INDEX(playerPed, 4154), 0.02f, 0.0f, 0.05f, 90.0f, 0.0f, 0.0f, 1, 1, 1, 1, 0, 1); //x is left right
+						while (GetAsyncKeyState(VK_NUMPAD5) || GetAsyncKeyState(VK_RETURN))
+						{
+							AI::TASK_PLAY_ANIM(playerPed, "mp_player_int_uppersmoke", "mp_player_int_smoke", 8.0f, 1.0f, 1000, 48, 0, 0, 0, 0);
+							ENTITY::FREEZE_ENTITY_POSITION(playerPed, false);
+							WAIT(2000);
+							STREAMING::_0xB80D8756B4668AB6("scr_carsteal4");
+							if (STREAMING::_0x8702416E512EC454("scr_carsteal4"))
+							{
+								GRAPHICS::_0x6C38AF3693A69A91("scr_carsteal4");
+								GRAPHICS::START_PARTICLE_FX_NON_LOOPED_ON_PED_BONE("scr_carsteal4_wheel_burnout", playerPed, 0.0f, -0.5f, 0.0f, 90.0f, 0.0, 0.0, 3651, 0.3f, 0, 0, 0);
+							}
+							WAIT(3000);
+						}
+						OBJECT::DELETE_OBJECT(&snack);
+						WEAPON::SET_CURRENT_PED_WEAPON(playerPed, current, 1);
+					}
+					ENTITY::SET_ENTITY_HEALTH(playerPed, (ENTITY::GET_ENTITY_HEALTH(playerPed) - 3.0f));
+				}
+				else
+					menu_deny();
+				break;
+			}
+			waitTime = 200;
+		}
+		else
+			if (bBack || trainer_switch_pressed() || PLAYER::IS_PLAYER_DEAD(player))
+			{
+				menu_beep();
+				reset_globals();
+				break;
+			}
+			else
+				if (bUp)
+				{
+					menu_beep();
+					if (activeLineIndexMain == 0)
+						activeLineIndexMain = lineCount;
+					activeLineIndexMain--;
+					waitTime = 150;
+				}
+				else
+					if (bDown)
+					{
+						menu_beep();
+						activeLineIndexMain++;
+						if (activeLineIndexMain == lineCount)
+							activeLineIndexMain = 0;
+						waitTime = 150;
+					}
+	}
+}
+
+void process_main_menu2()
+{
+	shopOpen = true;
+	const float lineWidth = 270.0;
+	const int lineCount = 4;
+	Ped playerPed = PLAYER::PLAYER_PED_ID();
+	Player player = PLAYER::PLAYER_ID();
+	ENTITY::FREEZE_ENTITY_POSITION(playerPed, true);
+
+	std::string caption = "24/7";
+
+	std::string lineCaption[lineCount] = {
+		shopText1,
+		shopText2,
+		shopText3,
+		shopText4
+	};
+
+
+	DWORD waitTime = 150;
+	while (true)
+	{
+		// timed menu draw, used for pause after active line switch
+		DWORD maxTickCount = GetTickCount() + waitTime;
+		do
+		{
+			// draw menu
+			draw_menu_line2(caption, lineWidth, 15.0, 18.0, 0.0, 5.0, false, true);
+			for (int i = 0; i < lineCount; i++)
+				if (i != activeLineIndexMain)
+					draw_menu_line2(lineCaption[i], lineWidth, 9.0, 60.0 + i * 36.0, 0.0, 9.0, false, false);
+			draw_menu_line2(lineCaption[activeLineIndexMain], lineWidth + 1.0, 11.0, 56.0 + activeLineIndexMain * 36.0, 0.0, 7.0, true, false);
+
+			WAIT(0);
+		} while (GetTickCount() < maxTickCount);
+		waitTime = 0;
+
+		// process buttons
+		bool bSelect, bBack, bUp, bDown;
+		get_button_state(&bSelect, &bBack, &bUp, &bDown);
+		if (bSelect)
+		{
+			switch (activeLineIndexMain)
+			{
+			case 0:
+				if (pnq < 10)
+				{
+					snack = 1;
+					moneyMath();
+					if (canBuy == true)
+						menu_beep();
+					else
+						menu_deny();
+				}
+				else
+					menu_deny();
+				break;
+			case 1:
+				if (ego < 10)
+				{
+					snack = 2;
+					moneyMath();
+					if (canBuy == true)
+						menu_beep();
+					else
+						menu_deny();
+				}
+				else
+					menu_deny();
+				break;
+			case 2:
+				if (met < 10)
+				{
+					snack = 3;
+					moneyMath();
+					if (canBuy == true)
+						menu_beep();
+					else
+						menu_deny();
+				}
+				else
+					menu_deny();
+				break;
+			case 3:
+				if (eco < 10)
+				{
+					snack = 4;
+					moneyMath();
+					if (canBuy == true)
+						menu_beep();
+					else
+						menu_deny();
+				}
+				else
+					menu_deny();
+				break;
+				/*case 4:
+				pnq -= 1;
+				break;
+				case 5:
+				pnq -= 1;
+				break;*/
+			}
+			waitTime = 200;
+		}
+		else
+			if (bBack || trainer_switch_pressed() || PLAYER::IS_PLAYER_DEAD(player))
+			{
+				menu_beep();
+				shopOpen = false;
+				ENTITY::FREEZE_ENTITY_POSITION(playerPed, false);
+				CONTROLS::DISABLE_ALL_CONTROL_ACTIONS(1);
+				reset_globals();
+				break;
+			}
+			else
+				if (bUp)
+				{
+					menu_beep();
+					if (activeLineIndexMain == 0)
+						activeLineIndexMain = lineCount;
+					activeLineIndexMain--;
+					waitTime = 150;
+				}
+				else
+					if (bDown)
+					{
+						menu_beep();
+						activeLineIndexMain++;
+						if (activeLineIndexMain == lineCount)
+							activeLineIndexMain = 0;
+						waitTime = 150;
+					}
+	}
+}
+
+void process_main_menu3()
+{
+	shopOpen = true;
+	const float lineWidth = 270.0;
+	const int lineCount = 2;
+	Ped playerPed = PLAYER::PLAYER_PED_ID();
+	Player player = PLAYER::PLAYER_ID();
+	ENTITY::FREEZE_ENTITY_POSITION(playerPed, true);
+
+	std::string caption = "Liquor Store";
+
+	std::string lineCaption[lineCount] = {
+		shopText5,
+		shopText6
+	};
+
+	DWORD waitTime = 150;
+	while (true)
+	{
+		// timed menu draw, used for pause after active line switch
+		DWORD maxTickCount = GetTickCount() + waitTime;
+		do
+		{
+			// draw menu
+			draw_menu_line3(caption, lineWidth, 15.0, 18.0, 0.0, 5.0, false, true);
+			for (int i = 0; i < lineCount; i++)
+				if (i != activeLineIndexMain)
+					draw_menu_line3(lineCaption[i], lineWidth, 9.0, 60.0 + i * 36.0, 0.0, 9.0, false, false);
+			draw_menu_line3(lineCaption[activeLineIndexMain], lineWidth + 1.0, 11.0, 56.0 + activeLineIndexMain * 36.0, 0.0, 7.0, true, false);
+
+			WAIT(0);
+		} while (GetTickCount() < maxTickCount);
+		waitTime = 0;
+
+		// process buttons
+		bool bSelect, bBack, bUp, bDown;
+		get_button_state(&bSelect, &bBack, &bUp, &bDown);
+		if (bSelect)
+		{
+			switch (activeLineIndexMain)
+			{
+			case 0:
+				if (pis < 10)
+				{
+					snack = 5;
+					moneyMath();
+					if (canBuy == true)
+						menu_beep();
+					else
+						menu_deny();
+				}
+				else
+					menu_deny();
+				break;
+			case 1:
+				if (smo <= 5)
+				{
+					snack = 6;
+					moneyMath();
+					if (canBuy == true)
+						menu_beep();
+					else
+						menu_deny();
+				}
+				else
+					menu_deny();
+				break;
+			}
+			waitTime = 200;
+		}
+		else
+			if (bBack || trainer_switch_pressed() || PLAYER::IS_PLAYER_DEAD(player))
+			{
+				menu_beep();
+				shopOpen = false;
+				ENTITY::FREEZE_ENTITY_POSITION(playerPed, false);
+				CONTROLS::DISABLE_ALL_CONTROL_ACTIONS(1);
+				reset_globals();
+				break;
+			}
+			else
+				if (bUp)
+				{
+					menu_beep();
+					if (activeLineIndexMain == 0)
+						activeLineIndexMain = lineCount;
+					activeLineIndexMain--;
+					waitTime = 150;
+				}
+				else
+					if (bDown)
+					{
+						menu_beep();
+						activeLineIndexMain++;
+						if (activeLineIndexMain == lineCount)
+							activeLineIndexMain = 0;
+						waitTime = 150;
+					}
+	}
+}
+
+void update()
+{
+	Ped playerPed = PLAYER::PLAYER_PED_ID();
+	Player player = PLAYER::PLAYER_ID();
+	Vehicle veh = PED::GET_VEHICLE_PED_IS_USING(playerPed);
+
+	if (gotModel == false)
+	{
+		if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+		{
+			baseModel = 0;
+			pnq = pnqM;
+			met = metM;
+			eco = ecoM;
+			ego = egoM;
+			pis = pisM;
+			smo = smoM;
+
+			if (drunkM == true)
+			{
+				WAIT(5000);
+				CAM::SHAKE_CINEMATIC_CAM("DRUNK_SHAKE", 2.0f);
+				CAM::SHAKE_GAMEPLAY_CAM("DRUNK_SHAKE", 2.0f);
+				CAM::SET_CAM_SHAKE_AMPLITUDE(-1, 5.0f);
+				STREAMING::REQUEST_ANIM_DICT("move_m@drunk@slightlydrunk");
+				while (!STREAMING::HAS_ANIM_DICT_LOADED("move_m@drunk@slightlydrunk"))
+					WAIT(0);
+				PED::SET_PED_MOVEMENT_CLIPSET(playerPed, "move_m@drunk@slightlydrunk", 0.75f);
+				PED::SET_PED_CAN_PLAY_AMBIENT_ANIMS(playerPed, 0);
+				PED::SET_PED_ALTERNATE_MOVEMENT_ANIM(playerPed, 0, "move_m@drunk@slightlydrunk", "idle", 2.0f, 1);
+				AUDIO::SET_PED_IS_DRUNK(playerPed, true);
+			}
+		}
+
+		if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+		{
+			baseModel = 1;
+			pnq = pnqF;
+			met = metF;
+			eco = ecoF;
+			ego = egoF;
+			pis = pisF;
+			smo = smoF;
+
+			if (drunkF == true)
+			{
+				WAIT(5000);
+				CAM::SHAKE_CINEMATIC_CAM("DRUNK_SHAKE", 2.0f);
+				CAM::SHAKE_GAMEPLAY_CAM("DRUNK_SHAKE", 2.0f);
+				CAM::SET_CAM_SHAKE_AMPLITUDE(-1, 5.0f);
+				STREAMING::REQUEST_ANIM_DICT("move_m@drunk@slightlydrunk");
+				while (!STREAMING::HAS_ANIM_DICT_LOADED("move_m@drunk@slightlydrunk"))
+					WAIT(0);
+				PED::SET_PED_MOVEMENT_CLIPSET(playerPed, "move_m@drunk@slightlydrunk", 0.75f);
+				PED::SET_PED_CAN_PLAY_AMBIENT_ANIMS(playerPed, 0);
+				PED::SET_PED_ALTERNATE_MOVEMENT_ANIM(playerPed, 0, "move_m@drunk@slightlydrunk", "idle", 2.0f, 1);
+				AUDIO::SET_PED_IS_DRUNK(playerPed, true);
+			}
+		}
+
+		if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+		{
+			baseModel = 2;
+			pnq = pnqT;
+			met = metT;
+			eco = ecoT;
+			ego = egoT;
+			pis = pisT;
+			smo = smoT;
+
+			if (drunkT == true)
+			{
+				WAIT(5000);
+				CAM::SHAKE_CINEMATIC_CAM("DRUNK_SHAKE", 2.0f);
+				CAM::SHAKE_GAMEPLAY_CAM("DRUNK_SHAKE", 2.0f);
+				CAM::SET_CAM_SHAKE_AMPLITUDE(-1, 5.0f);
+				STREAMING::REQUEST_ANIM_DICT("move_m@drunk@slightlydrunk");
+				while (!STREAMING::HAS_ANIM_DICT_LOADED("move_m@drunk@slightlydrunk"))
+					WAIT(0);
+				PED::SET_PED_MOVEMENT_CLIPSET(playerPed, "move_m@drunk@slightlydrunk", 0.75f);
+				PED::SET_PED_CAN_PLAY_AMBIENT_ANIMS(playerPed, 0);
+				PED::SET_PED_ALTERNATE_MOVEMENT_ANIM(playerPed, 0, "move_m@drunk@slightlydrunk", "idle", 2.0f, 1);
+				AUDIO::SET_PED_IS_DRUNK(playerPed, true);
+			}
+		}
+
+		gotModel = true;
+	}
+
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_zero")))
+		model = 0;
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_one")))
+		model = 1;
+	if (PED::IS_PED_MODEL(playerPed, GAMEPLAY::GET_HASH_KEY("player_two")))
+		model = 2;
+
+	if (model != baseModel)
+	{
+		gotModel = false;
+	}
+
+	if (GetAsyncKeyState(VK_LCONTROL) && GetAsyncKeyState('E') && saving == false)
+	{
+		saving = true;
+		WAIT(500);
+		writer.WriteInteger("PnQ", "Michael", pnqM);
+		writer.WriteInteger("PnQ", "Franklin", pnqF);
+		writer.WriteInteger("PnQ", "Trevor", pnqT);
+		writer.WriteInteger("Ego", "Michael", egoM);
+		writer.WriteInteger("Ego", "Franklin", egoF);
+		writer.WriteInteger("Ego", "Trevor", egoT);
+		writer.WriteInteger("Eco", "Michael", ecoM);
+		writer.WriteInteger("Eco", "Franklin", ecoF);
+		writer.WriteInteger("Eco", "Trevor", ecoT);
+		writer.WriteInteger("Met", "Michael", metM);
+		writer.WriteInteger("Met", "Franklin", metF);
+		writer.WriteInteger("Met", "Trevor", metT);
+		writer.WriteInteger("Smo", "Michael", smoM);
+		writer.WriteInteger("Smo", "Franklin", smoF);
+		writer.WriteInteger("Smo", "Trevor", smoT);
+		writer.WriteInteger("Pis", "Michael", pisM);
+		writer.WriteInteger("Pis", "Franklin", pisF);
+		writer.WriteInteger("Pis", "Trevor", pisT);
+	}
+
+	if (drunkM == true || drunkF == true || drunkT == true)
+	{
+		if (gotHour == false)
+		{
+			baseHour = TIME::GET_CLOCK_HOURS();
+			gotHour = true;
+		}
+
+		hour = TIME::GET_CLOCK_HOURS();
+
+		if (hour != baseHour)
+		{
+			gotHour = false;
+			downTime += 1;
+
+			if (downTime == 2)
+			{
+				if (drunkM == true)
+				{
+					drunkM = false;
+
+					if (model == 0)
+					{
+						PED::RESET_PED_MOVEMENT_CLIPSET(playerPed, 0.0f);
+						PED::CLEAR_PED_ALTERNATE_MOVEMENT_ANIM(playerPed, 0, 0.0f);
+						CAM::SHAKE_CINEMATIC_CAM("DRUNK_SHAKE", 0.0f);
+						CAM::SHAKE_GAMEPLAY_CAM("DRUNK_SHAKE", 0.0f);
+						CAM::SET_CAM_SHAKE_AMPLITUDE(-1, 0.0f);
+						PED::SET_PED_CAN_PLAY_AMBIENT_ANIMS(playerPed, 1);
+						AUDIO::SET_PED_IS_DRUNK(playerPed, false);
+					}
+				}
+				if (drunkF == true)
+				{
+					drunkF = false;
+
+					if (model == 1)
+					{
+						PED::RESET_PED_MOVEMENT_CLIPSET(playerPed, 0.0f);
+						PED::CLEAR_PED_ALTERNATE_MOVEMENT_ANIM(playerPed, 0, 0.0f);
+						CAM::SHAKE_CINEMATIC_CAM("DRUNK_SHAKE", 0.0f);
+						CAM::SHAKE_GAMEPLAY_CAM("DRUNK_SHAKE", 0.0f);
+						CAM::SET_CAM_SHAKE_AMPLITUDE(-1, 0.0f);
+						PED::SET_PED_CAN_PLAY_AMBIENT_ANIMS(playerPed, 1);
+						AUDIO::SET_PED_IS_DRUNK(playerPed, false);
+					}
+				}
+				if (drunkT == true)
+				{
+					drunkT = false;
+
+					if (model == 2)
+					{
+						PED::RESET_PED_MOVEMENT_CLIPSET(playerPed, 0.0f);
+						PED::CLEAR_PED_ALTERNATE_MOVEMENT_ANIM(playerPed, 0, 0.0f);
+						CAM::SHAKE_CINEMATIC_CAM("DRUNK_SHAKE", 0.0f);
+						CAM::SHAKE_GAMEPLAY_CAM("DRUNK_SHAKE", 0.0f);
+						CAM::SET_CAM_SHAKE_AMPLITUDE(-1, 0.0f);
+						PED::SET_PED_CAN_PLAY_AMBIENT_ANIMS(playerPed, 1);
+						AUDIO::SET_PED_IS_DRUNK(playerPed, false);
+					}
+				}
+				downTime = 0;
+			}
+		}
+	}
+
+	if (PLAYER::IS_PLAYER_DEAD(player))
+	{
+		drunkM = false;
+		drunkF = false;
+		drunkT = false;
+		PED::RESET_PED_MOVEMENT_CLIPSET(playerPed, 0.0f);
+		PED::CLEAR_PED_ALTERNATE_MOVEMENT_ANIM(playerPed, 0, 0.0f);
+		CAM::SHAKE_CINEMATIC_CAM("DRUNK_SHAKE", 0.0f);
+		CAM::SHAKE_GAMEPLAY_CAM("DRUNK_SHAKE", 0.0f);
+		CAM::SET_CAM_SHAKE_AMPLITUDE(-1, 0.0f);
+		PED::SET_PED_CAN_PLAY_AMBIENT_ANIMS(playerPed, 1);
+		AUDIO::SET_PED_IS_DRUNK(playerPed, false);
+
+	}
+
+	if (!GetAsyncKeyState(VK_RCONTROL) && !GetAsyncKeyState('E'))
+	{
+		saving = false;
+	}
+
+	if (ENTITY::IS_ENTITY_DEAD(playerPed) || PLAYER::IS_PLAYER_BEING_ARRESTED(player, TRUE))
+	{
+		while (ENTITY::IS_ENTITY_DEAD(PLAYER::PLAYER_PED_ID()) || PLAYER::IS_PLAYER_BEING_ARRESTED(PLAYER::PLAYER_ID(), TRUE))
+			WAIT(1);
+	}
+
+	if (GetAsyncKeyState('B') && GetAsyncKeyState(VK_LCONTROL))
+	{
+		blips = !blips;
+		process = false;
+		WAIT(500);
+	}
+
+	if (blips == true && process == false)
+	{
+		blip1 = UI::ADD_BLIP_FOR_COORD(29.25, -1348.30, 29.49);
+		UI::SET_BLIP_SPRITE(blip1, 52);
+		UI::SET_BLIP_DISPLAY(blip1, (char)"you will never see this");
+		blip2 = UI::ADD_BLIP_FOR_COORD(-52.28, -1755.81, 29.42);
+		UI::SET_BLIP_SPRITE(blip2, 52);
+		UI::SET_BLIP_DISPLAY(blip2, (char)"you will never see this");
+		blip3 = UI::ADD_BLIP_FOR_COORD(1159.49, -325.65, 69.20);
+		UI::SET_BLIP_SPRITE(blip3, 52);
+		UI::SET_BLIP_DISPLAY(blip3, (char)"you will never see this");
+		blip4 = UI::ADD_BLIP_FOR_COORD(2558.39, 385.35, 108.62);
+		UI::SET_BLIP_SPRITE(blip4, 52);
+		UI::SET_BLIP_DISPLAY(blip4, (char)"you will never see this");
+		blip5 = UI::ADD_BLIP_FOR_COORD(-1822.99, 788.92, 138.19);
+		UI::SET_BLIP_SPRITE(blip5, 52);
+		UI::SET_BLIP_DISPLAY(blip5, (char)"you will never see this");
+		blip6 = UI::ADD_BLIP_FOR_COORD(-3039.61, 589.20, 7.90);
+		UI::SET_BLIP_SPRITE(blip6, 52);
+		UI::SET_BLIP_DISPLAY(blip6, (char)"you will never see this");
+		blip7 = UI::ADD_BLIP_FOR_COORD(-3241.11, 1004.56, 12.83);
+		UI::SET_BLIP_SPRITE(blip7, 52);
+		UI::SET_BLIP_DISPLAY(blip7, (char)"you will never see this");
+		blip8 = UI::ADD_BLIP_FOR_COORD(376.89, 324.55, 103.56);
+		UI::SET_BLIP_SPRITE(blip8, 52);
+		UI::SET_BLIP_DISPLAY(blip8, (char)"you will never see this");
+		blip9 = UI::ADD_BLIP_FOR_COORD(-711.79, -915.49, 19.21);
+		UI::SET_BLIP_SPRITE(blip9, 52);
+		UI::SET_BLIP_DISPLAY(blip9, (char)"you will never see this");
+		blip10 = UI::ADD_BLIP_FOR_COORD(544.33, 2671.67, 42.15);
+		UI::SET_BLIP_SPRITE(blip10, 52);
+		UI::SET_BLIP_DISPLAY(blip10, (char)"you will never see this");
+		blip11 = UI::ADD_BLIP_FOR_COORD(2681.05, 3283.00, 55.24);
+		UI::SET_BLIP_SPRITE(blip11, 52);
+		UI::SET_BLIP_DISPLAY(blip11, (char)"you will never see this");
+		blip12 = UI::ADD_BLIP_FOR_COORD(1964.55, 3741.63, 32.34);
+		UI::SET_BLIP_SPRITE(blip12, 52);
+		UI::SET_BLIP_DISPLAY(blip12, (char)"you will never see this");
+		blip13 = UI::ADD_BLIP_FOR_COORD(1699.64, 4928.73, 42.06);
+		UI::SET_BLIP_SPRITE(blip13, 52);
+		UI::SET_BLIP_DISPLAY(blip13, (char)"you will never see this");
+		blip14 = UI::ADD_BLIP_FOR_COORD(1731.60, 6412.34, 35.03);
+		UI::SET_BLIP_SPRITE(blip14, 52);
+		UI::SET_BLIP_DISPLAY(blip14, (char)"you will never see this");
+		blip15 = UI::ADD_BLIP_FOR_COORD(1140.30, -981.03, 46.42);
+		UI::SET_BLIP_SPRITE(blip15, 52);
+		UI::SET_BLIP_DISPLAY(blip15, (char)"you will never see this");
+		blip16 = UI::ADD_BLIP_FOR_COORD(-1225.89, -903.44, 12.33);
+		UI::SET_BLIP_SPRITE(blip16, 52);
+		UI::SET_BLIP_DISPLAY(blip16, (char)"you will never see this");
+		blip17 = UI::ADD_BLIP_FOR_COORD(-1490.40, -382.61, 40.17);
+		UI::SET_BLIP_SPRITE(blip17, 52);
+		UI::SET_BLIP_DISPLAY(blip17, (char)"you will never see this");
+		blip18 = UI::ADD_BLIP_FOR_COORD(-2972.75, 390.73, 15.05);
+		UI::SET_BLIP_SPRITE(blip18, 52);
+		UI::SET_BLIP_DISPLAY(blip18, (char)"you will never see this");
+		blip19 = UI::ADD_BLIP_FOR_COORD(1166.33, 2704.54, 38.16);
+		UI::SET_BLIP_SPRITE(blip19, 52);
+		UI::SET_BLIP_DISPLAY(blip19, (char)"you will never see this");
+		UI::SET_BLIP_AS_SHORT_RANGE(blip1, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip2, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip3, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip4, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip5, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip6, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip7, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip8, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip9, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip10, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip11, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip12, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip13, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip14, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip15, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip16, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip17, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip18, true);
+		UI::SET_BLIP_AS_SHORT_RANGE(blip19, true);
+		process = true;
+	}
+	if (blips == false && process == false)
+	{
+		UI::REMOVE_BLIP(&blip1);
+		UI::REMOVE_BLIP(&blip2);
+		UI::REMOVE_BLIP(&blip3);
+		UI::REMOVE_BLIP(&blip5);
+		UI::REMOVE_BLIP(&blip6);
+		UI::REMOVE_BLIP(&blip7);
+		UI::REMOVE_BLIP(&blip8);
+		UI::REMOVE_BLIP(&blip9);
+		UI::REMOVE_BLIP(&blip10);
+		UI::REMOVE_BLIP(&blip11);
+		UI::REMOVE_BLIP(&blip12);
+		UI::REMOVE_BLIP(&blip13);
+		UI::REMOVE_BLIP(&blip14);
+		UI::REMOVE_BLIP(&blip15);
+		UI::REMOVE_BLIP(&blip16);
+		UI::REMOVE_BLIP(&blip17);
+		UI::REMOVE_BLIP(&blip18);
+		UI::REMOVE_BLIP(&blip19);
+		process = true;
+	}
+}
+
+void main()
+{
+	pnqM = reader.ReadInteger("PnQ", "Michael", 0);
+	pnqF = reader.ReadInteger("PnQ", "Franklin", 0);
+	pnqT = reader.ReadInteger("PnQ", "Trevor", 0);
+
+	egoM = reader.ReadInteger("Ego", "Michael", 0);
+	egoF = reader.ReadInteger("Ego", "Franklin", 0);
+	egoT = reader.ReadInteger("Ego", "Trevor", 0);
+
+	metM = reader.ReadInteger("Met", "Michael", 0);
+	metF = reader.ReadInteger("Met", "Franklin", 0);
+	metT = reader.ReadInteger("Met", "Trevor", 0);
+
+	ecoM = reader.ReadInteger("Eco", "Michael", 0);
+	ecoF = reader.ReadInteger("Eco", "Franklin", 0);
+	ecoT = reader.ReadInteger("Eco", "Trevor", 0);
+
+	smoM = reader.ReadInteger("Smo", "Michael", 0);
+	smoF = reader.ReadInteger("Smo", "Franklin", 0);
+	smoT = reader.ReadInteger("Smo", "Trevor", 0);
+
+	pisM = reader.ReadInteger("Pis", "Michael", 0);
+	pisF = reader.ReadInteger("Pis", "Franklin", 0);
+	pisT = reader.ReadInteger("Pis", "Trevor", 0);
+
+	openButton = reader.ReadInteger("Options", "MenuButton", 78);
+	screenType = reader.ReadInteger("Options", "ScreenType", 1);
+	reset_globals();
+
+	WAIT(10);
+	blip1 = UI::ADD_BLIP_FOR_COORD(29.25, -1348.30, 29.49);
+	UI::SET_BLIP_SPRITE(blip1, 52);
+	UI::SET_BLIP_DISPLAY(blip1, (char)"you will never see this");
+	blip2 = UI::ADD_BLIP_FOR_COORD(-52.28, -1755.81, 29.42);
+	UI::SET_BLIP_SPRITE(blip2, 52);
+	UI::SET_BLIP_DISPLAY(blip2, (char)"you will never see this");
+	blip3 = UI::ADD_BLIP_FOR_COORD(1159.49, -325.65, 69.20);
+	UI::SET_BLIP_SPRITE(blip3, 52);
+	UI::SET_BLIP_DISPLAY(blip3, (char)"you will never see this");
+	blip4 = UI::ADD_BLIP_FOR_COORD(2558.39, 385.35, 108.62);
+	UI::SET_BLIP_SPRITE(blip4, 52);
+	UI::SET_BLIP_DISPLAY(blip4, (char)"you will never see this");
+	blip5 = UI::ADD_BLIP_FOR_COORD(-1822.99, 788.92, 138.19);
+	UI::SET_BLIP_SPRITE(blip5, 52);
+	UI::SET_BLIP_DISPLAY(blip5, (char)"you will never see this");
+	blip6 = UI::ADD_BLIP_FOR_COORD(-3039.61, 589.20, 7.90);
+	UI::SET_BLIP_SPRITE(blip6, 52);
+	UI::SET_BLIP_DISPLAY(blip6, (char)"you will never see this");
+	blip7 = UI::ADD_BLIP_FOR_COORD(-3241.11, 1004.56, 12.83);
+	UI::SET_BLIP_SPRITE(blip7, 52);
+	UI::SET_BLIP_DISPLAY(blip7, (char)"you will never see this");
+	blip8 = UI::ADD_BLIP_FOR_COORD(376.89, 324.55, 103.56);
+	UI::SET_BLIP_SPRITE(blip8, 52);
+	UI::SET_BLIP_DISPLAY(blip8, (char)"you will never see this");
+	blip9 = UI::ADD_BLIP_FOR_COORD(-711.79, -915.49, 19.21);
+	UI::SET_BLIP_SPRITE(blip9, 52);
+	UI::SET_BLIP_DISPLAY(blip9, (char)"you will never see this");
+	blip10 = UI::ADD_BLIP_FOR_COORD(544.33, 2671.67, 42.15);
+	UI::SET_BLIP_SPRITE(blip10, 52);
+	UI::SET_BLIP_DISPLAY(blip10, (char)"you will never see this");
+	blip11 = UI::ADD_BLIP_FOR_COORD(2681.05, 3283.00, 55.24);
+	UI::SET_BLIP_SPRITE(blip11, 52);
+	UI::SET_BLIP_DISPLAY(blip11, (char)"you will never see this");
+	blip12 = UI::ADD_BLIP_FOR_COORD(1964.55, 3741.63, 32.34);
+	UI::SET_BLIP_SPRITE(blip12, 52);
+	UI::SET_BLIP_DISPLAY(blip12, (char)"you will never see this");
+	blip13 = UI::ADD_BLIP_FOR_COORD(1699.64, 4928.73, 42.06);
+	UI::SET_BLIP_SPRITE(blip13, 52);
+	UI::SET_BLIP_DISPLAY(blip13, (char)"you will never see this");
+	blip14 = UI::ADD_BLIP_FOR_COORD(1731.60, 6412.34, 35.03);
+	UI::SET_BLIP_SPRITE(blip14, 52);
+	UI::SET_BLIP_DISPLAY(blip14, (char)"you will never see this");
+	blip15 = UI::ADD_BLIP_FOR_COORD(1140.30, -981.03, 46.42);
+	UI::SET_BLIP_SPRITE(blip15, 52);
+	UI::SET_BLIP_DISPLAY(blip15, (char)"you will never see this");
+	blip16 = UI::ADD_BLIP_FOR_COORD(-1225.89, -903.44, 12.33);
+	UI::SET_BLIP_SPRITE(blip16, 52);
+	UI::SET_BLIP_DISPLAY(blip16, (char)"you will never see this");
+	blip17 = UI::ADD_BLIP_FOR_COORD(-1490.40, -382.61, 40.17);
+	UI::SET_BLIP_SPRITE(blip17, 52);
+	UI::SET_BLIP_DISPLAY(blip17, (char)"you will never see this");
+	blip18 = UI::ADD_BLIP_FOR_COORD(-2972.75, 390.73, 15.05);
+	UI::SET_BLIP_SPRITE(blip18, 52);
+	UI::SET_BLIP_DISPLAY(blip18, (char)"you will never see this");
+	blip19 = UI::ADD_BLIP_FOR_COORD(1166.33, 2704.54, 38.16);
+	UI::SET_BLIP_SPRITE(blip19, 52);
+	UI::SET_BLIP_DISPLAY(blip19, (char)"you will never see this");
+	UI::SET_BLIP_AS_SHORT_RANGE(blip1, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip2, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip3, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip4, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip5, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip6, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip7, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip8, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip9, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip10, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip11, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip12, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip13, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip14, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip15, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip16, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip17, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip18, true);
+	UI::SET_BLIP_AS_SHORT_RANGE(blip19, true);
+
+	while (true)
+	{
+		distance();
+		inventory();
+		update_status_text();
+
+		if (trainer_switch_pressed())
+		{
+			menu_beep();
+			process_main_menu();
+		}
+		if (canPress)
+		{
+			if (trainer_switch_pressed2())
+			{
+				menu_beep();
+				process_main_menu2();
+			}
+		}
+
+		if (canPress2)
+		{
+			if (trainer_switch_pressed2())
+			{
+				menu_beep();
+				process_main_menu3();
+			}
+		}
+		update();
+		WAIT(0);
+	}
+}
+
+void ScriptMain()
+{
+	srand(GetTickCount());
+	main();
+}
